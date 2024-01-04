@@ -1,4 +1,4 @@
-module genshin
+module resin
 
 go 1.21.5
 

@@ -15,7 +15,23 @@ type Config struct {
 	Ltuid            string `json:"ltuid"`
 }
 
+var DefaultConfig Config = Config{
+	Refresh_interval: 60,
+	Genshin_uuid:     "genshin uuid",
+	Server:           "os_usa",
+	Ltoken:           "token",
+	Ltuid:            "mihoyo uuid",
+}
+
+func WriteConfig(configPath string) {
+	bt, _ := json.MarshalIndent(&DefaultConfig, "", "    ")
+	os.WriteFile(configPath, bt, 0755)
+}
+
 func LoadConfig(configPath string) Config {
+	if _, err := os.Stat(configPath); err != nil {
+		WriteConfig(configPath)
+	}
 	var cfg Config
 	jsonFile, err := os.Open(configPath)
 	if err != nil {

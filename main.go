@@ -1,16 +1,13 @@
 package main
 
 import (
-	// "bytes"
-	"bytes"
 	"compress/gzip"
-	"encoding/json"
 	"fmt"
-	"genshin/config"
-	"genshin/helper"
-	"genshin/icon"
 	"io"
 	"net/http"
+	"resin/config"
+	"resin/genshin"
+	"resin/icon"
 	"strconv"
 	"time"
 
@@ -21,6 +18,60 @@ func main() {
 	systray.Run(onReady, onExit)
 }
 
+func refreshData(cfg config.Config, mResin *systray.MenuItem, mCommision *systray.MenuItem) {
+	url := fmt.Sprintf("https://bbs-api-os.hoyolab.com/game_record/genshin/api/dailyNote?server=%s&role_id=%s", cfg.Server, cfg.Genshin_uuid)
+
+	// Create a HTTP request
+	rOrig := genshin.GenerateRequest(url, cfg.Ltoken, cfg.Ltuid)
+
+	client := &http.Client{}
+	for {
+		func() {
+			r := rOrig
+			r.Header.Add("DS", genshin.GenerateDS())
+			response, err := client.Do(r)
+			if err != nil {
+				panic(err)
+			}
+
+			// Check that the server actually sent compressed data
+			var reader io.ReadCloser
+			switch response.Header.Get("Content-Encoding") {
+			case "gzip":
+				reader, err = gzip.NewReader(response.Body)
+			default:
+				reader = response.Body
+			}
+			defer reader.Close()
+
+			gr := genshin.LoadJSON(reader)
+
+			current := gr.Data.CurrentResin
+			max := gr.Data.MaxResin
+
+			full := current == max
+			seconds, _ := strconv.Atoi(gr.Data.ResinRecoveryTime)
+			recovery := ""
+			if seconds != 0 {
+				hours := seconds / 3600
+				minutes := (seconds / 60) - hours*60
+				recovery = fmt.Sprintf(" [%dh %dm]", hours, minutes)
+			}
+
+			if full {
+				systray.SetIcon(icon.FullData)
+			} else {
+				systray.SetIcon(icon.NotFullData)
+			}
+			title := fmt.Sprintf("%d/%d%s", current, max, recovery)
+			systray.SetTooltip(title)
+			mResin.SetTitle(title)
+			mCommision.SetTitle(fmt.Sprintf("Commissions: %d/%d", gr.Data.FinishedTaskNum, gr.Data.TotalTaskNum))
+			time.Sleep(10 * time.Second)
+		}()
+	}
+}
+
 func onReady() {
 	systray.SetIcon(icon.NotFullData)
 	systray.SetTitle("Genshin Real-Time Notes")
@@ -28,79 +79,13 @@ func onReady() {
 	mResin := systray.AddMenuItem("Resin: ?/?", "Resin")
 	mResin.SetIcon(icon.NotFullData)
 
+	mCommision := systray.AddMenuItem("Commissions: ?/?", "Commisions")
+
 	mQuit := systray.AddMenuItem("Quit", "Quit the whole app")
 
 	cfg := config.LoadConfig("./config.json")
 
-	go func() {
-		url := fmt.Sprintf("https://bbs-api-os.hoyolab.com/game_record/genshin/api/dailyNote?server=%s&role_id=%s", cfg.Server, cfg.Genshin_uuid)
-
-		// Create a HTTP request
-		rOrig := helper.GenerateRequest(url, cfg.Ltoken, cfg.Ltuid)
-
-		client := &http.Client{}
-		for {
-			func() {
-				r := rOrig
-				r.Header.Add("DS", helper.GenerateDS())
-				response, err := client.Do(r)
-				if err != nil {
-					panic(err)
-				}
-
-				// Check that the server actually sent compressed data
-				var reader io.ReadCloser
-				switch response.Header.Get("Content-Encoding") {
-				case "gzip":
-					reader, err = gzip.NewReader(response.Body)
-				default:
-					reader = response.Body
-				}
-				defer reader.Close()
-
-				jsonMap := make(map[string]interface{})
-				buf := new(bytes.Buffer)
-				buf.ReadFrom(reader)
-				jsonString := buf.String()
-				err = json.Unmarshal([]byte(jsonString), &jsonMap)
-				if err != nil {
-					panic(err)
-				}
-				fmt.Println(jsonMap)
-
-				current := "?"
-				max := "?"
-				recovery := ""
-				full := false
-				if data, ok := jsonMap["data"].(map[string]interface{}); ok {
-					if resin, ok := data["current_resin"]; ok {
-						current = fmt.Sprint(resin)
-					}
-					if resin, ok := data["max_resin"]; ok {
-						max = fmt.Sprint(resin)
-						full = current == max
-					}
-					if rec_time, ok := data["resin_recovery_time"]; ok {
-						seconds, _ := strconv.Atoi(fmt.Sprint(rec_time))
-						if seconds != 0 {
-							hours := seconds / 3600
-							minutes := (seconds / 60) - hours*60
-							recovery = fmt.Sprintf(" [%dh %dm]", hours, minutes)
-						}
-					}
-				}
-				if full {
-					systray.SetIcon(icon.FullData)
-				} else {
-					systray.SetIcon(icon.NotFullData)
-				}
-				title := fmt.Sprintf("%s/%s%s", current, max, recovery)
-				systray.SetTooltip(title)
-				mResin.SetTitle(title)
-				time.Sleep(10 * time.Second)
-			}()
-		}
-	}()
+	go refreshData(cfg, mResin, mCommision)
 
 	go func() {
 		for {
