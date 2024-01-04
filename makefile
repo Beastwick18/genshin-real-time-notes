@@ -5,3 +5,4 @@ windows:
 icon:
 	~/go/bin/2goarray FullData icon < icon/full.ico > icon/full.go
 	~/go/bin/2goarray NotFullData icon < icon/not_full.ico > icon/notFull.go
+	~/go/bin/2goarray NotFullPngData icon < icon/not_full.png > icon/notFullPng.go
