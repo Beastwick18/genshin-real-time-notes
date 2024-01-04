@@ -95,7 +95,8 @@ func GenerateDS() string {
 	return fmt.Sprintf("%d,%s,%s", t, r, h)
 }
 
-func GenerateRequest(url string, ltoken string, ltuid string) *http.Request {
+func GenerateRequest(server string, genshinUUID string, ltoken string, ltuid string) *http.Request {
+	url := fmt.Sprintf("https://bbs-api-os.hoyolab.com/game_record/genshin/api/dailyNote?server=%s&role_id=%s", server, genshinUUID)
 	rOrig, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		panic(err)
