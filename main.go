@@ -1,10 +1,7 @@
 package main
 
 import (
-	"compress/gzip"
 	"fmt"
-	"io"
-	"net/http"
 	"resin/config"
 	"resin/genshin"
 	"resin/icon"
@@ -14,28 +11,8 @@ import (
 	"github.com/getlantern/systray"
 )
 
-func main() {
-	systray.Run(onReady, onExit)
-}
-
-func refreshData(r *http.Request, client *http.Client, mResin *systray.MenuItem, mCommission *systray.MenuItem) {
-	r.Header.Add("DS", genshin.GenerateDS())
-	response, err := client.Do(r)
-	if err != nil {
-		panic(err)
-	}
-
-	// Check that the server actually sent compressed data
-	var reader io.ReadCloser
-	switch response.Header.Get("Content-Encoding") {
-	case "gzip":
-		reader, err = gzip.NewReader(response.Body)
-	default:
-		reader = response.Body
-	}
-	defer reader.Close()
-
-	gr := genshin.LoadJSON(reader)
+func refreshData(cfg *config.Config, mResin *systray.MenuItem, mCommission *systray.MenuItem) {
+	gr := genshin.GetData(cfg)
 
 	current := gr.Data.CurrentResin
 	max := gr.Data.MaxResin
@@ -60,14 +37,24 @@ func refreshData(r *http.Request, client *http.Client, mResin *systray.MenuItem,
 	mCommission.SetTitle(fmt.Sprintf("Commissions: %d/%d", gr.Data.FinishedTaskNum, gr.Data.TotalTaskNum))
 }
 
-func refreshDataLoop(cfg config.Config, mResin *systray.MenuItem, mCommission *systray.MenuItem) {
-	// Create a HTTP request
-	rOrig := genshin.GenerateRequest(cfg.Server, cfg.Genshin_uuid, cfg.Ltoken, cfg.Ltuid)
-
-	client := &http.Client{}
+func refreshDataLoop(cfg *config.Config, mResin *systray.MenuItem, mCommission *systray.MenuItem) {
 	for {
-		refreshData(rOrig, client, mResin, mCommission)
+		refreshData(cfg, mResin, mCommission)
 		time.Sleep(time.Duration(cfg.Refresh_interval) * time.Second)
+	}
+}
+
+func watchEvents(cfg *config.Config, mRefresh *systray.MenuItem, mQuit *systray.MenuItem, mResin *systray.MenuItem, mCommission *systray.MenuItem) {
+	for {
+		select {
+		case <-mQuit.ClickedCh:
+			systray.Quit()
+			fmt.Println("quitting")
+			return
+		case <-mRefresh.ClickedCh:
+			refreshData(cfg, mResin, mCommission)
+			break
+		}
 	}
 }
 
@@ -75,12 +62,14 @@ func onReady() {
 	systray.SetIcon(icon.NotFullData)
 	systray.SetTitle("Genshin Real-Time Notes")
 	systray.SetTooltip("?/?")
+
 	mResin := systray.AddMenuItem("Resin: ?/?", "Resin")
 	mResin.SetIcon(icon.NotFullData)
 
-	mCommission := systray.AddMenuItem("Commissions: ?/?", "Commisions")
+	mCommission := systray.AddMenuItem("Commissions: ?/?", "Commissions")
 
 	systray.AddSeparator()
+
 	mRefresh := systray.AddMenuItem("Refresh", "Refresh data")
 	mQuit := systray.AddMenuItem("Quit", "Quit the whole app")
 
@@ -88,23 +77,13 @@ func onReady() {
 
 	go refreshDataLoop(cfg, mResin, mCommission)
 
-	go func() {
-		for {
-			select {
-			case <-mQuit.ClickedCh:
-				systray.Quit()
-				fmt.Println("quitting")
-				return
-			case <-mRefresh.ClickedCh:
-				rOrig := genshin.GenerateRequest(cfg.Server, cfg.Genshin_uuid, cfg.Ltoken, cfg.Ltuid)
-				client := &http.Client{}
-				refreshData(rOrig, client, mResin, mCommission)
-				break
-			}
-		}
-	}()
+	go watchEvents(cfg, mRefresh, mQuit, mResin, mCommission)
 }
 
 func onExit() {
 	// clean up here
+}
+
+func main() {
+	systray.Run(onReady, onExit)
 }

@@ -28,7 +28,7 @@ func WriteConfig(configPath string) {
 	os.WriteFile(configPath, bt, 0755)
 }
 
-func LoadConfig(configPath string) Config {
+func LoadConfig(configPath string) *Config {
 	if _, err := os.Stat(configPath); err != nil {
 		WriteConfig(configPath)
 	}
@@ -44,5 +44,5 @@ func LoadConfig(configPath string) Config {
 	}
 	fmt.Println(bytesValue)
 	json.Unmarshal(bytesValue, &cfg)
-	return cfg
+	return &cfg
 }
