@@ -8,12 +8,13 @@ Add your real-time notes to your system tray!
 
 ![full](./screenshots/full.png)
 
-- Which will generate `resin.exe`
-- Run this once to generate the default `config.json`
-- Fill out the config with your data. (See below for steps to get your info)
 
 # Installing (pre-built binaries)
 - You can download a pre-built .exe from the releases tab
+- Run the .exe once to generate the default `config.json`
+- Fill out the config with your data. (See below for steps to get your info)
+- The easiest way to run the program will be to create a shortcut to it
+- Make sure the config.json is in the same directory as the .exe
 
 # Getting session info from hoyolab
 1. First go to https://www.hoyolab.com/home and log in
@@ -22,7 +23,7 @@ Add your real-time notes to your system tray!
   - The process should be similar on other browsers
 4. Under cookies, select https://www.hoyolab.com
 ![cookies](./screenshots/cookies.png)
-5. Below should be the values needed to fill in the config file.
+5. Below should be the values needed to fill in the config file
   - `ltuid_v2` is the same as `ltuid` in the config
   - `ltoken_v2` is the same as `ltoken` in the config
   - `genshin_uuid` is your uuid found in-game in the bottom right
@@ -46,3 +47,4 @@ cd genshin-real-time-notes
 ```
 make
 ```
+- Which will generate `resin.exe`
