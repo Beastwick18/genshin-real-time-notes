@@ -26,7 +26,7 @@ Add your real-time notes to your system tray!
   - `ltuid_v2` is the same as `ltuid` in the config
   - `ltoken_v2` is the same as `ltoken` in the config
   - `genshin_uuid` is your uuid found in-game in the bottom right
-  - `server` be the string corresponding to the first digit of your uuid:
+  - `server` be the string corresponding to the first digit of your Genshin uuid:
     - 1: cn_gf01
     - 2: cn_gf01
     - 5: cn_qd01
