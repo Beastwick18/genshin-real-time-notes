@@ -1,4 +1,6 @@
-config.json
-resin
-resin.exe
-curl.sh
+/config.json
+/resin
+/resin.exe
+/curl.sh
+/stamina
+/stamina.exe

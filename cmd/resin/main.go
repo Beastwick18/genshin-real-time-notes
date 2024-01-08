@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"resin/config"
-	"resin/genshin"
-	"resin/icon"
+	"resin/pkg/config"
+	"resin/pkg/hoyo"
+	"resin/pkg/hoyo/genshin"
+	"resin/pkg/icon"
 	"strconv"
 	"time"
 
@@ -12,7 +13,7 @@ import (
 )
 
 func refreshData(cfg *config.Config, mResin *systray.MenuItem, mCommission *systray.MenuItem) {
-	gr := genshin.GetData(cfg)
+	gr := hoyo.GetData[genshin.GenshinResponse](genshin.BaseURL, cfg.GenshinServer, cfg.GenshinUID, cfg.Ltoken, cfg.Ltuid)
 
 	current := gr.Data.CurrentResin
 	max := gr.Data.MaxResin

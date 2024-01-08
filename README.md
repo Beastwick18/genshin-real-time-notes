@@ -2,11 +2,11 @@
 Add your real-time notes to your system tray!
 
 # Screenshots
-![tooltip](./screenshots/tooltip.png)
+![tooltip](./assets/tooltip.png)
 
-![menu](./screenshots/menu.png)
+![menu](./assets/menu.png)
 
-![full](./screenshots/full.png)
+![full](./assets/full.png)
 
 
 # Installing (pre-built binaries)
@@ -22,7 +22,7 @@ Add your real-time notes to your system tray!
 3. On Firefox, navigate to the Storage tab
     - The process should be similar on other browsers
 4. Under cookies, select https://www.hoyolab.com
-![cookies](./screenshots/cookies.png)
+![cookies](./assets/cookies.png)
 5. Below should be the values needed to fill in the config file
     - `ltuid_v2` is the same as `ltuid` in the config
     - `ltoken_v2` is the same as `ltoken` in the config
