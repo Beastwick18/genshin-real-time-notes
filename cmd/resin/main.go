@@ -22,8 +22,7 @@ func refreshData(cfg *config.Config, mResin *systray.MenuItem, mCommission *syst
 	seconds, _ := strconv.Atoi(gr.Data.ResinRecoveryTime)
 	recovery := ""
 	if seconds != 0 {
-		hours := seconds / 3600
-		minutes := (seconds / 60) - hours*60
+		hours, minutes := hoyo.GetTime(seconds)
 		recovery = fmt.Sprintf(" [%dh %dm]", hours, minutes)
 	}
 

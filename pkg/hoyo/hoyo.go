@@ -60,3 +60,9 @@ func GenerateDS() string {
 	h := helper.GetMD5Hash(fmt.Sprintf("salt=%s&t=%d&r=%s", salt, t, r))
 	return fmt.Sprintf("%d,%s,%s", t, r, h)
 }
+
+func GetTime(seconds int) (int, int) {
+	hours := seconds / 3600
+	minutes := (seconds / 60) - hours*60
+	return hours, minutes
+}

@@ -20,8 +20,7 @@ func refreshData(cfg *config.Config, mStamina *systray.MenuItem, mTraining *syst
 	seconds := hr.Data.StaminaRecoveryTime
 	recovery := ""
 	if seconds != 0 {
-		hours := seconds / 3600
-		minutes := (seconds / 60) - hours*60
+		hours, minutes := hoyo.GetTime(seconds)
 		recovery = fmt.Sprintf(" [%dh %dm]", hours, minutes)
 	}
 
