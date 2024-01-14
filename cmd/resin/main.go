@@ -6,6 +6,7 @@ import (
 	"resin/pkg/hoyo"
 	"resin/pkg/hoyo/genshin"
 	"resin/pkg/icon"
+	"resin/pkg/logging"
 	"strconv"
 	"time"
 
@@ -13,20 +14,28 @@ import (
 )
 
 func refreshData(cfg *config.Config, mResin *systray.MenuItem, mCommission *systray.MenuItem) {
-	gr := hoyo.GetData[genshin.GenshinResponse](genshin.BaseURL, cfg.GenshinServer, cfg.GenshinUID, cfg.Ltoken, cfg.Ltuid)
+	gr, err := hoyo.GetData[genshin.GenshinResponse](genshin.BaseURL, cfg.GenshinServer, cfg.GenshinUID, cfg.Ltoken, cfg.Ltuid)
+	if err != nil {
+		logging.Fail("Failed getting data from %s: Check your UID, ltoken, and ltuid\n%s", genshin.BaseURL, err)
+		systray.SetTooltip("Failed getting data!")
+		return
+	}
 
 	current := gr.Data.CurrentResin
 	max := gr.Data.MaxResin
 
-	full := current == max
-	seconds, _ := strconv.Atoi(gr.Data.ResinRecoveryTime)
-	recovery := ""
-	if seconds != 0 {
+	seconds, err := strconv.Atoi(gr.Data.ResinRecoveryTime)
+
+	var recovery string
+	if err != nil {
+		logging.Warn("Failed parsing recovery time (got \"%s\")\n%s", gr.Data.ResinRecoveryTime, err)
+		recovery = " [?]"
+	} else {
 		hours, minutes := hoyo.GetTime(seconds)
 		recovery = fmt.Sprintf(" [%dh %dm]", hours, minutes)
 	}
 
-	if full {
+	if current == max {
 		systray.SetIcon(icon.FullData)
 	} else {
 		systray.SetIcon(icon.NotFullData)
@@ -49,9 +58,9 @@ func watchEvents(cfg *config.Config, mRefresh *systray.MenuItem, mQuit *systray.
 		select {
 		case <-mQuit.ClickedCh:
 			systray.Quit()
-			fmt.Println("quitting")
 			return
 		case <-mRefresh.ClickedCh:
+			logging.Info("User clicked refresh")
 			refreshData(cfg, mResin, mCommission)
 			break
 		}
@@ -59,6 +68,9 @@ func watchEvents(cfg *config.Config, mRefresh *systray.MenuItem, mQuit *systray.
 }
 
 func onReady() {
+	logging.SetFile("./resin.log")
+	logging.Info("Application start")
+
 	systray.SetIcon(icon.NotFullData)
 	systray.SetTitle("Genshin Real-Time Notes")
 	systray.SetTooltip("?/?")
@@ -71,17 +83,22 @@ func onReady() {
 	systray.AddSeparator()
 
 	mRefresh := systray.AddMenuItem("Refresh", "Refresh data")
-	mQuit := systray.AddMenuItem("Quit", "Quit the whole app")
+	mQuit := systray.AddMenuItem("Quit", "Exit the application")
 
-	cfg := config.LoadConfig("./config.json")
-
-	go refreshDataLoop(cfg, mResin, mCommission)
+	cfg, err := config.LoadConfig("./config.json")
+	if err != nil {
+		logging.Fail("Failed loading config file. Make sure it is present in the same directory you are running the program from.\n%s", err)
+		systray.SetTooltip("Error loading config!")
+	} else {
+		go refreshDataLoop(cfg, mResin, mCommission)
+	}
 
 	go watchEvents(cfg, mRefresh, mQuit, mResin, mCommission)
 }
 
 func onExit() {
-	// clean up here
+	logging.Info("Exiting the application")
+	logging.Close()
 }
 
 func main() {

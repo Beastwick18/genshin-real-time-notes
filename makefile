@@ -1,6 +1,11 @@
-.PHONY: icon windows
-windows:
+.PHONY: icon windows resin stamina all
+
+all: resin stamina
+
+resin:
 	env GOOS=windows GOARCH=amd64 go build -ldflags "-H=windowsgui" -o resin.exe cmd/resin/main.go
+
+stamina:
 	env GOOS=windows GOARCH=amd64 go build -ldflags "-H=windowsgui" -o stamina.exe cmd/stamina/main.go
 
 icon:

@@ -26,14 +26,14 @@ var DefaultConfig Config = Config{
 	Ltuid:            "mihoyo uid",
 }
 
-func LoadJSON[T any](reader io.Reader) T {
+func LoadJSON[T any](reader io.Reader) (*T, error) {
 	var cfg T
 	bytesValue, err := io.ReadAll(reader)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	json.Unmarshal(bytesValue, &cfg)
-	return cfg
+	return &cfg, nil
 }
 
 func WriteConfig(configPath string) {
@@ -41,24 +41,24 @@ func WriteConfig(configPath string) {
 	os.WriteFile(configPath, bt, 0755)
 }
 
-func LoadConfig(configPath string) *Config {
+func LoadConfig(configPath string) (*Config, error) {
 	if _, err := os.Stat(configPath); err != nil {
 		WriteConfig(configPath)
 	}
 	var cfg Config
 	jsonFile, err := os.Open(configPath)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer jsonFile.Close()
 	bytesValue, err := io.ReadAll(jsonFile)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	json.Unmarshal(bytesValue, &cfg)
 
 	// Ensure at least one second of wait time before refresh
 	cfg.Refresh_interval = max(1, cfg.Refresh_interval)
 
-	return &cfg
+	return &cfg, nil
 }

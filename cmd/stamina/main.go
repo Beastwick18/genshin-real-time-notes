@@ -6,13 +6,19 @@ import (
 	"resin/pkg/hoyo"
 	"resin/pkg/hoyo/hsr"
 	"resin/pkg/icon"
+	"resin/pkg/logging"
 	"time"
 
 	"github.com/getlantern/systray"
 )
 
 func refreshData(cfg *config.Config, mStamina *systray.MenuItem, mTraining *systray.MenuItem) {
-	hr := hoyo.GetData[hsr.HsrResponse](hsr.BaseURL, cfg.HsrServer, cfg.HsrUID, cfg.Ltoken, cfg.Ltuid)
+	hr, err := hoyo.GetData[hsr.HsrResponse](hsr.BaseURL, cfg.HsrServer, cfg.HsrUID, cfg.Ltoken, cfg.Ltuid)
+	if err != nil {
+		logging.Fail("Failed getting data from %s: Check your UID, ltoken, and ltuid\n%s", hsr.BaseURL, err)
+		systray.SetTooltip("Failed getting data!")
+		return
+	}
 
 	current := hr.Data.CurrentStamina
 	max := hr.Data.MaxStamina
@@ -47,9 +53,9 @@ func watchEvents(cfg *config.Config, mRefresh *systray.MenuItem, mQuit *systray.
 		select {
 		case <-mQuit.ClickedCh:
 			systray.Quit()
-			fmt.Println("quitting")
 			return
 		case <-mRefresh.ClickedCh:
+			logging.Info("User clicked refresh")
 			refreshData(cfg, mStamina, mTraining)
 			break
 		}
@@ -57,6 +63,9 @@ func watchEvents(cfg *config.Config, mRefresh *systray.MenuItem, mQuit *systray.
 }
 
 func onReady() {
+	logging.SetFile("./stamina.log")
+	logging.Info("Application start")
+
 	systray.SetIcon(icon.HsrNotFullData)
 	systray.SetTitle("Honkai Star Rail Real-Time Notes")
 	systray.SetTooltip("?/?")
@@ -69,17 +78,22 @@ func onReady() {
 	systray.AddSeparator()
 
 	mRefresh := systray.AddMenuItem("Refresh", "Refresh data")
-	mQuit := systray.AddMenuItem("Quit", "Quit the whole app")
+	mQuit := systray.AddMenuItem("Quit", "Exit the application")
 
-	cfg := config.LoadConfig("./config.json")
-
-	go refreshDataLoop(cfg, mStamina, mTraining)
+	cfg, err := config.LoadConfig("./config.json")
+	if err != nil {
+		logging.Fail("Failed loading config file. Make sure it is present in the same directory you are running the program from.\n%s", err)
+		systray.SetTooltip("Error loading config!")
+	} else {
+		go refreshDataLoop(cfg, mStamina, mTraining)
+	}
 
 	go watchEvents(cfg, mRefresh, mQuit, mStamina, mTraining)
 }
 
 func onExit() {
-	// clean up here
+	logging.Info("Exiting the application")
+	logging.Close()
 }
 
 func main() {

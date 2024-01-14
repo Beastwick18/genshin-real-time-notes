@@ -10,11 +10,11 @@ import (
 	"time"
 )
 
-func MakeRequest(baseURL string, server string, genshinUID string, ltoken string, ltuid string) *http.Response {
+func MakeRequest(baseURL string, server string, genshinUID string, ltoken string, ltuid string) (*http.Response, error) {
 	url := fmt.Sprintf("%s?server=%s&role_id=%s", baseURL, server, genshinUID)
 	r, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	r.Header.Add("User-Agent", "Mozilla/5.0 (Linux; Android 11; SAMSUNG SM-G973U) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/14.2 Chrome/87.0.4280.141 Mobile Safari/537.36")
 	r.Header.Add("Accept", "application/json, text/plain, */*")
@@ -34,23 +34,33 @@ func MakeRequest(baseURL string, server string, genshinUID string, ltoken string
 	client := &http.Client{}
 	r.Header.Add("DS", GenerateDS())
 	response, err := client.Do(r)
-	return response
+	return response, nil
 }
 
-func GetData[T any](baseURL string, server string, uid string, ltoken string, ltuid string) T {
-	response := MakeRequest(baseURL, server, uid, ltoken, ltuid)
+func GetData[T any](baseURL string, server string, uid string, ltoken string, ltuid string) (*T, error) {
+	response, err := MakeRequest(baseURL, server, uid, ltoken, ltuid)
+	if err != nil {
+		return nil, err
+	}
 
 	// Check that the server actually sent compressed data
 	var reader io.ReadCloser
 	switch response.Header.Get("Content-Encoding") {
 	case "gzip":
-		reader, _ = gzip.NewReader(response.Body)
+		reader, err = gzip.NewReader(response.Body)
+		if err != nil {
+			return nil, err
+		}
 	default:
 		reader = response.Body
 	}
 	defer reader.Close()
 
-	return config.LoadJSON[T](reader)
+	json, err := config.LoadJSON[T](reader)
+	if err != nil {
+		return nil, err
+	}
+	return json, nil
 }
 
 func GenerateDS() string {
