@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/getlantern/systray"
+	"github.com/skratchdot/open-golang/open"
 )
 
 func refreshData(cfg *config.Config, mResin *systray.MenuItem, mCommission *systray.MenuItem) {
@@ -53,7 +54,7 @@ func refreshDataLoop(cfg *config.Config, mResin *systray.MenuItem, mCommission *
 	}
 }
 
-func watchEvents(cfg *config.Config, mRefresh *systray.MenuItem, mQuit *systray.MenuItem, mResin *systray.MenuItem, mCommission *systray.MenuItem) {
+func watchEvents(cfg *config.Config, mLogs *systray.MenuItem, mRefresh *systray.MenuItem, mQuit *systray.MenuItem, mResin *systray.MenuItem, mCommission *systray.MenuItem) {
 	for {
 		select {
 		case <-mQuit.ClickedCh:
@@ -62,6 +63,10 @@ func watchEvents(cfg *config.Config, mRefresh *systray.MenuItem, mQuit *systray.
 		case <-mRefresh.ClickedCh:
 			logging.Info("User clicked refresh")
 			refreshData(cfg, mResin, mCommission)
+			break
+		case <-mLogs.ClickedCh:
+			logging.Info("Opening \".\\resin.log\"")
+			open.Start(".\\resin.log")
 			break
 		}
 	}
@@ -82,6 +87,7 @@ func onReady() {
 
 	systray.AddSeparator()
 
+	mLogs := systray.AddMenuItem("Logs", "Show logs")
 	mRefresh := systray.AddMenuItem("Refresh", "Refresh data")
 	mQuit := systray.AddMenuItem("Quit", "Exit the application")
 
@@ -93,7 +99,7 @@ func onReady() {
 		go refreshDataLoop(cfg, mResin, mCommission)
 	}
 
-	go watchEvents(cfg, mRefresh, mQuit, mResin, mCommission)
+	go watchEvents(cfg, mLogs, mRefresh, mQuit, mResin, mCommission)
 }
 
 func onExit() {

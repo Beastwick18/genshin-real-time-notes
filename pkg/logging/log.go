@@ -25,7 +25,7 @@ func Warn(fmt string, v ...interface{}) {
 
 func SetFile(file string) {
 	var err error
-	f, err = os.OpenFile(file, os.O_RDWR|os.O_CREATE, 0666)
+	f, err = os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		Fail("Failed loading file")
 		return

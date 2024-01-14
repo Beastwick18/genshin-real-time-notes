@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	// "os"
+	// "path"
 	"resin/pkg/config"
 	"resin/pkg/hoyo"
 	"resin/pkg/hoyo/hsr"
@@ -10,6 +12,7 @@ import (
 	"time"
 
 	"github.com/getlantern/systray"
+	"github.com/skratchdot/open-golang/open"
 )
 
 func refreshData(cfg *config.Config, mStamina *systray.MenuItem, mTraining *systray.MenuItem) {
@@ -48,7 +51,7 @@ func refreshDataLoop(cfg *config.Config, mStamina *systray.MenuItem, mTraining *
 	}
 }
 
-func watchEvents(cfg *config.Config, mRefresh *systray.MenuItem, mQuit *systray.MenuItem, mStamina *systray.MenuItem, mTraining *systray.MenuItem) {
+func watchEvents(cfg *config.Config, mLogs *systray.MenuItem, mRefresh *systray.MenuItem, mQuit *systray.MenuItem, mStamina *systray.MenuItem, mTraining *systray.MenuItem) {
 	for {
 		select {
 		case <-mQuit.ClickedCh:
@@ -57,6 +60,10 @@ func watchEvents(cfg *config.Config, mRefresh *systray.MenuItem, mQuit *systray.
 		case <-mRefresh.ClickedCh:
 			logging.Info("User clicked refresh")
 			refreshData(cfg, mStamina, mTraining)
+			break
+		case <-mLogs.ClickedCh:
+			logging.Info("Opening \".\\stamina.log\"")
+			open.Start(".\\stamina.log")
 			break
 		}
 	}
@@ -77,6 +84,7 @@ func onReady() {
 
 	systray.AddSeparator()
 
+	mLogs := systray.AddMenuItem("Logs", "Show logs")
 	mRefresh := systray.AddMenuItem("Refresh", "Refresh data")
 	mQuit := systray.AddMenuItem("Quit", "Exit the application")
 
@@ -88,7 +96,7 @@ func onReady() {
 		go refreshDataLoop(cfg, mStamina, mTraining)
 	}
 
-	go watchEvents(cfg, mRefresh, mQuit, mStamina, mTraining)
+	go watchEvents(cfg, mLogs, mRefresh, mQuit, mStamina, mTraining)
 }
 
 func onExit() {
