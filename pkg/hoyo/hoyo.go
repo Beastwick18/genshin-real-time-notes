@@ -43,7 +43,6 @@ func GetData[T any](baseURL string, server string, uid string, ltoken string, lt
 		return nil, err
 	}
 
-	// Check that the server actually sent compressed data
 	var reader io.ReadCloser
 	switch response.Header.Get("Content-Encoding") {
 	case "gzip":

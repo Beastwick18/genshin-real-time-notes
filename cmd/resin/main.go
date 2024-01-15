@@ -7,14 +7,21 @@ import (
 	"resin/pkg/hoyo/genshin"
 	"resin/pkg/icon"
 	"resin/pkg/logging"
+	"resin/pkg/ui"
 	"strconv"
-	"time"
 
-	"github.com/getlantern/systray"
-	"github.com/skratchdot/open-golang/open"
+	"github.com/energye/systray"
 )
 
-func refreshData(cfg *config.Config, mResin *systray.MenuItem, mCommission *systray.MenuItem) {
+type Menu struct {
+	Resin      *systray.MenuItem
+	Commission *systray.MenuItem
+	Expedition *systray.MenuItem
+	Realm      *systray.MenuItem
+	Domain     *systray.MenuItem
+}
+
+func refreshData(cfg *config.Config, m *Menu) {
 	gr, err := hoyo.GetData[genshin.GenshinResponse](genshin.BaseURL, cfg.GenshinServer, cfg.GenshinUID, cfg.Ltoken, cfg.Ltuid)
 	if err != nil {
 		logging.Fail("Failed getting data from %s: Check your UID, ltoken, and ltuid\n%s", genshin.BaseURL, err)
@@ -31,6 +38,8 @@ func refreshData(cfg *config.Config, mResin *systray.MenuItem, mCommission *syst
 	if err != nil {
 		logging.Warn("Failed parsing recovery time (got \"%s\")\n%s", gr.Data.ResinRecoveryTime, err)
 		recovery = " [?]"
+	} else if seconds == 0 {
+		recovery = ""
 	} else {
 		hours, minutes := hoyo.GetTime(seconds)
 		recovery = fmt.Sprintf(" [%dh %dm]", hours, minutes)
@@ -43,63 +52,28 @@ func refreshData(cfg *config.Config, mResin *systray.MenuItem, mCommission *syst
 	}
 	title := fmt.Sprintf("%d/%d%s", current, max, recovery)
 	systray.SetTooltip(title)
-	mResin.SetTitle(title)
-	mCommission.SetTitle(fmt.Sprintf("Commissions: %d/%d", gr.Data.FinishedTaskNum, gr.Data.TotalTaskNum))
-}
 
-func refreshDataLoop(cfg *config.Config, mResin *systray.MenuItem, mCommission *systray.MenuItem) {
-	for {
-		refreshData(cfg, mResin, mCommission)
-		time.Sleep(time.Duration(cfg.Refresh_interval) * time.Second)
-	}
-}
-
-func watchEvents(cfg *config.Config, mLogs *systray.MenuItem, mRefresh *systray.MenuItem, mQuit *systray.MenuItem, mResin *systray.MenuItem, mCommission *systray.MenuItem) {
-	for {
-		select {
-		case <-mQuit.ClickedCh:
-			systray.Quit()
-			return
-		case <-mRefresh.ClickedCh:
-			logging.Info("User clicked refresh")
-			refreshData(cfg, mResin, mCommission)
-			break
-		case <-mLogs.ClickedCh:
-			logging.Info("Opening \".\\resin.log\"")
-			open.Start(".\\resin.log")
-			break
+	m.Resin.SetTitle(title)
+	m.Commission.SetTitle(fmt.Sprintf("Commissions: %d/%d", gr.Data.FinishedTaskNum, gr.Data.TotalTaskNum))
+	count := 0
+	for _, exp := range gr.Data.Expeditions {
+		if exp.Status == "Finished" {
+			count++
 		}
 	}
+	m.Expedition.SetTitle(fmt.Sprintf("Expeditions: %d/%d", count, gr.Data.MaxExpeditionNum))
+	m.Realm.SetTitle(fmt.Sprintf("Realm: %d/%d", gr.Data.CurrentHomeCoin, gr.Data.MaxHomeCoin))
 }
 
 func onReady() {
-	logging.SetFile("./resin.log")
-	logging.Info("Application start")
+	m := &Menu{}
+	m.Resin = ui.CreateMenuItem("Resin: ?/?", icon.NotFullData)
+	m.Commission = ui.CreateMenuItem("Commissions: ?/?", icon.CommissionData)
+	m.Expedition = ui.CreateMenuItem("Expeditions: ?/?", icon.ExpeditionData)
+	m.Realm = ui.CreateMenuItem("Realm: ?/?", icon.RealmData)
+	m.Domain = ui.CreateMenuItem("Weekly Bosses: ?/?", icon.WeeklyBossData)
 
-	systray.SetIcon(icon.NotFullData)
-	systray.SetTitle("Genshin Real-Time Notes")
-	systray.SetTooltip("?/?")
-
-	mResin := systray.AddMenuItem("Resin: ?/?", "Resin")
-	mResin.SetIcon(icon.NotFullData)
-
-	mCommission := systray.AddMenuItem("Commissions: ?/?", "Commissions")
-
-	systray.AddSeparator()
-
-	mLogs := systray.AddMenuItem("Logs", "Show logs")
-	mRefresh := systray.AddMenuItem("Refresh", "Refresh data")
-	mQuit := systray.AddMenuItem("Quit", "Exit the application")
-
-	cfg, err := config.LoadConfig("./config.json")
-	if err != nil {
-		logging.Fail("Failed loading config file. Make sure it is present in the same directory you are running the program from.\n%s", err)
-		systray.SetTooltip("Error loading config!")
-	} else {
-		go refreshDataLoop(cfg, mResin, mCommission)
-	}
-
-	go watchEvents(cfg, mLogs, mRefresh, mQuit, mResin, mCommission)
+	ui.InitApp("Genshin Real-Time Notes", "?/?", icon.NotFullData, ".\\resin.log", ".\\config.json", m, refreshData)
 }
 
 func onExit() {
