@@ -6,7 +6,7 @@ import (
 	"math/rand"
 )
 
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 func GetMD5Hash(text string) string {
 	hash := md5.Sum([]byte(text))
@@ -16,7 +16,7 @@ func GetMD5Hash(text string) string {
 func RandStringBytes(n int) string {
 	b := make([]byte, n)
 	for i := range b {
-		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+		b[i] = charset[rand.Intn(len(charset))]
 	}
 	return string(b)
 }

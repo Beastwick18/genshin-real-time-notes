@@ -1,7 +1,6 @@
 /config.json
 /resin
-/resin.exe
+/*.exe
 /curl.sh
 /stamina
-/stamina.exe
 *.log
