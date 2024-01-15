@@ -2,11 +2,11 @@
 Add your real-time notes to your system tray!
 
 # Screenshots
-![tooltip](./assets/tooltip.png)
+![tooltip](./assets/both.png)
 
-![menu](./assets/menu.png)
+![genshin](./assets/genshin.png)
 
-![full](./assets/full.png)
+![honkai star rail](./assets/hsr.png)
 
 
 # Installing (pre-built binaries)
