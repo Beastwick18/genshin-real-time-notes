@@ -11,6 +11,7 @@ import (
 	"resin/pkg/ui"
 	"strconv"
 
+	"gioui.org/app"
 	"github.com/energye/systray"
 )
 
@@ -86,5 +87,5 @@ func onExit() {
 
 func main() {
 	systray.Run(onReady, onExit)
-
+	app.Main()
 }

@@ -55,6 +55,7 @@ func watchEvents[T any](cm *CommonMenu, cfg *config.Config, menu *T, logFile str
 		go func() {
 			cm.Config.Disable()
 			w := app.NewWindow()
+			// w.Option(app.Decorated(false))
 			w.Option(app.Size(500, 250))
 			err := run(w, cfg)
 			if err != nil {
