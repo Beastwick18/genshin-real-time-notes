@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"resin/pkg/config"
 	"resin/pkg/hoyo"
 	"resin/pkg/hoyo/genshin"
@@ -80,8 +81,10 @@ func onReady() {
 func onExit() {
 	logging.Info("Exiting the application")
 	logging.Close()
+	os.Exit(1)
 }
 
 func main() {
 	systray.Run(onReady, onExit)
+
 }
