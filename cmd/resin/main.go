@@ -82,7 +82,7 @@ func onReady() {
 func onExit() {
 	logging.Info("Exiting the application")
 	logging.Close()
-	os.Exit(1)
+	os.Exit(0)
 }
 
 func main() {

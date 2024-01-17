@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"resin/pkg/config"
 	"resin/pkg/hoyo"
 	"resin/pkg/hoyo/hsr"
@@ -74,6 +75,7 @@ func onReady() {
 func onExit() {
 	logging.Info("Exiting the application")
 	logging.Close()
+	os.Exit(0)
 }
 
 func main() {
