@@ -15,6 +15,7 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
+	"github.com/Beastwick18/go-webview2"
 	"github.com/energye/systray"
 	"github.com/skratchdot/open-golang/open"
 )
@@ -32,6 +33,32 @@ func CreateMenuItem(title string, icon []byte) *systray.MenuItem {
 	return item
 }
 
+func createPopup(popup func(webview2.WebView, *config.Config), cfg *config.Config) {
+	w := webview2.NewWithUserAgent(webview2.WebViewOptions{
+		Debug:     true,
+		AutoFocus: true,
+		WindowOptions: webview2.WindowOptions{
+			Title:  "Webview",
+			PosX:   -404,
+			PosY:   -745,
+			Width:  384,
+			Height: 654,
+			IconId: 2, // icon resource id
+			Center: false,
+		},
+	}, "Mozilla/5.0 (Linux; Android 11; SAMSUNG SM-G973U) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/14.2 Chrome/87.0.4280.141 Mobile Safari/537.36")
+	if w == nil {
+		logging.Fail("Failed to load webview")
+		return
+	}
+	logging.Info("Opening webview")
+	w.SetSize(384, 654, webview2.HintNone)
+	popup(w, cfg)
+
+	w.Run()
+	w.Destroy()
+}
+
 func refreshLoop[T any](cfg *config.Config, menu *T, refresh func(*config.Config, *T)) {
 	for {
 		refresh(cfg, menu)
@@ -39,7 +66,7 @@ func refreshLoop[T any](cfg *config.Config, menu *T, refresh func(*config.Config
 	}
 }
 
-func watchEvents[T any](cm *CommonMenu, cfg *config.Config, menu *T, logFile string, popup func(systray.IMenu, *config.Config), refresh func(*config.Config, *T)) {
+func watchEvents[T any](cm *CommonMenu, cfg *config.Config, menu *T, logFile string, popup func(webview2.WebView, *config.Config), refresh func(*config.Config, *T)) {
 	cm.Quit.Click(func() {
 		systray.Quit()
 	})
@@ -66,7 +93,7 @@ func watchEvents[T any](cm *CommonMenu, cfg *config.Config, menu *T, logFile str
 		}()
 	})
 	systray.SetOnClick(func(menu systray.IMenu) {
-		popup(menu, cfg)
+		createPopup(popup, cfg)
 	})
 }
 
@@ -117,7 +144,7 @@ func run(w *app.Window, cfg *config.Config) error {
 	}
 }
 
-func InitApp[T any](title string, tooltip string, icon []byte, logFile string, configFile string, menu *T, popup func(systray.IMenu, *config.Config), refresh func(*config.Config, *T)) {
+func InitApp[T any](title string, tooltip string, icon []byte, logFile string, configFile string, menu *T, popup func(webview2.WebView, *config.Config), refresh func(*config.Config, *T)) {
 	systray.SetOnClick(func(menu systray.IMenu) {
 		menu.ShowMenu()
 	})

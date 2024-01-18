@@ -62,30 +62,9 @@ func refreshData(cfg *config.Config, m *Menu) {
 	m.EchoOfWar.SetTitle(fmt.Sprintf("Echo of War: %d/%d", hr.Data.WeeklyCocoonCnt, hr.Data.WeeklyCocoonLimit))
 }
 
-func popup(menu systray.IMenu, cfg *config.Config) {
-	w := webview2.NewWithUserAgent(webview2.WebViewOptions{
-		Debug:     true,
-		AutoFocus: true,
-		WindowOptions: webview2.WindowOptions{
-			Title:  "Honkai: Star Rail",
-			PosX:   -404,
-			PosY:   -745,
-			Width:  384,
-			Height: 654,
-			IconId: 2, // icon resource id
-			Center: false,
-		},
-	}, "Mozilla/5.0 (Linux; Android 11; SAMSUNG SM-G973U) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/14.2 Chrome/87.0.4280.141 Mobile Safari/537.36")
-	if w == nil {
-		logging.Fail("Failed to load webview")
-		return
-	}
-	logging.Info("Opening webview")
-	w.SetSize(384, 654, webview2.HintNone)
+func popup(w webview2.WebView, cfg *config.Config) {
+	w.SetTitle("Honkai: Star Rail")
 	w.Navigate("https://act.hoyolab.com/app/community-game-records-sea/rpg/m.html#/hsr")
-
-	w.Run()
-	w.Destroy()
 }
 
 func onReady() {
