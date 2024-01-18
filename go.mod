@@ -4,13 +4,13 @@ go 1.21.5
 
 require (
 	gioui.org v0.4.2
+	github.com/Beastwick18/go-webview2 v0.0.0-20240118101115-e8f5832fb9a0
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 )
 
 require (
 	gioui.org/cpu v0.0.0-20210817075930-8d6a761490d2 // indirect
 	gioui.org/shader v1.0.8 // indirect
-	github.com/Beastwick18/go-webview2 v0.0.0-20240118085558-20d226f79542 // indirect
 	github.com/go-text/typesetting v0.0.0-20230803102845-24e03d8b5372 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/jchv/go-winloader v0.0.0-20200815041850-dec1ee9a7fd5 // indirect
