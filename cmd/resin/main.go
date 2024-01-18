@@ -12,6 +12,7 @@ import (
 	"strconv"
 
 	"gioui.org/app"
+	"github.com/Beastwick18/go-webview2"
 	"github.com/energye/systray"
 )
 
@@ -68,6 +69,31 @@ func refreshData(cfg *config.Config, m *Menu) {
 	m.Domain.SetTitle(fmt.Sprintf("Weekly Bosses: %d/%d", gr.Data.RemainResinDiscountNum, gr.Data.ResinDiscountNumLimit))
 }
 
+func popup(menu systray.IMenu, cfg *config.Config) {
+	w := webview2.NewWithUserAgent(webview2.WebViewOptions{
+		Debug:     true,
+		AutoFocus: true,
+		WindowOptions: webview2.WindowOptions{
+			Title:  "Genshin",
+			PosX:   -404,
+			PosY:   -745,
+			Width:  384,
+			Height: 654,
+			IconId: 2, // icon resource id
+			Center: false,
+		},
+	}, "Mozilla/5.0 (Linux; Android 11; SAMSUNG SM-G973U) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/14.2 Chrome/87.0.4280.141 Mobile Safari/537.36")
+	if w == nil {
+		logging.Fail("Failed to load webview.")
+		return
+	}
+	w.SetSize(384, 654, webview2.HintNone)
+	w.Navigate(fmt.Sprintf("https://act.hoyolab.com/app/community-game-records-sea/m.html#/ys/realtime?role_id=%s&server=%s", cfg.GenshinUID, cfg.GenshinServer))
+
+	w.Run()
+	w.Destroy()
+}
+
 func onReady() {
 	m := &Menu{}
 	m.Resin = ui.CreateMenuItem("Resin: ?/?", icon.NotFullData)
@@ -76,7 +102,7 @@ func onReady() {
 	m.Realm = ui.CreateMenuItem("Realm: ?/?", icon.RealmData)
 	m.Domain = ui.CreateMenuItem("Weekly Bosses: ?/?", icon.WeeklyBossData)
 
-	ui.InitApp("Genshin Real-Time Notes", "?/?", icon.NotFullData, ".\\resin.log", ".\\config.json", m, refreshData)
+	ui.InitApp("Genshin Real-Time Notes", "?/?", icon.NotFullData, ".\\resin.log", ".\\config.json", m, popup, refreshData)
 }
 
 func onExit() {

@@ -11,6 +11,7 @@ import (
 	"resin/pkg/ui"
 
 	"gioui.org/app"
+	"github.com/Beastwick18/go-webview2"
 	"github.com/energye/systray"
 )
 
@@ -61,6 +62,31 @@ func refreshData(cfg *config.Config, m *Menu) {
 	m.EchoOfWar.SetTitle(fmt.Sprintf("Echo of War: %d/%d", hr.Data.WeeklyCocoonCnt, hr.Data.WeeklyCocoonLimit))
 }
 
+func popup(menu systray.IMenu, cfg *config.Config) {
+	w := webview2.NewWithUserAgent(webview2.WebViewOptions{
+		Debug:     true,
+		AutoFocus: true,
+		WindowOptions: webview2.WindowOptions{
+			Title:  "Honkai: Star Rail",
+			PosX:   -404,
+			PosY:   -745,
+			Width:  384,
+			Height: 654,
+			IconId: 2, // icon resource id
+			Center: false,
+		},
+	}, "Mozilla/5.0 (Linux; Android 11; SAMSUNG SM-G973U) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/14.2 Chrome/87.0.4280.141 Mobile Safari/537.36")
+	if w == nil {
+		logging.Fail("Failed to load webview.")
+		return
+	}
+	w.SetSize(384, 654, webview2.HintNone)
+	w.Navigate("https://act.hoyolab.com/app/community-game-records-sea/rpg/m.html#/hsr")
+
+	w.Run()
+	w.Destroy()
+}
+
 func onReady() {
 	m := &Menu{}
 	m.Stamina = ui.CreateMenuItem("Stamina: ?/?", icon.HsrNotFullData)
@@ -69,7 +95,7 @@ func onReady() {
 	m.Reserve = ui.CreateMenuItem("Expeditions: ?/?", icon.HsrFullData)
 	m.EchoOfWar = ui.CreateMenuItem("Echo of War: ?/?", icon.EchoOfWarData)
 
-	ui.InitApp("Honkai Star Rail Real-Time Notes", "?/?", icon.HsrNotFullData, ".\\stamina.log", ".\\config.json", m, refreshData)
+	ui.InitApp("Honkai Star Rail Real-Time Notes", "?/?", icon.HsrNotFullData, ".\\stamina.log", ".\\config.json", m, popup, refreshData)
 }
 
 func onExit() {

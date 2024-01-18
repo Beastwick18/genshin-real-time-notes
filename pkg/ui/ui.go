@@ -39,7 +39,7 @@ func refreshLoop[T any](cfg *config.Config, menu *T, refresh func(*config.Config
 	}
 }
 
-func watchEvents[T any](cm *CommonMenu, cfg *config.Config, menu *T, logFile string, refresh func(*config.Config, *T)) {
+func watchEvents[T any](cm *CommonMenu, cfg *config.Config, menu *T, logFile string, popup func(systray.IMenu, *config.Config), refresh func(*config.Config, *T)) {
 	cm.Quit.Click(func() {
 		systray.Quit()
 	})
@@ -62,7 +62,11 @@ func watchEvents[T any](cm *CommonMenu, cfg *config.Config, menu *T, logFile str
 				logging.Fail(err.Error())
 			}
 			cm.Config.Enable()
+
 		}()
+	})
+	systray.SetOnClick(func(menu systray.IMenu) {
+		popup(menu, cfg)
 	})
 }
 
@@ -113,7 +117,7 @@ func run(w *app.Window, cfg *config.Config) error {
 	}
 }
 
-func InitApp[T any](title string, tooltip string, icon []byte, logFile string, configFile string, menu *T, refresh func(*config.Config, *T)) {
+func InitApp[T any](title string, tooltip string, icon []byte, logFile string, configFile string, menu *T, popup func(systray.IMenu, *config.Config), refresh func(*config.Config, *T)) {
 	systray.SetOnClick(func(menu systray.IMenu) {
 		menu.ShowMenu()
 	})
@@ -140,7 +144,7 @@ func InitApp[T any](title string, tooltip string, icon []byte, logFile string, c
 		go refreshLoop(cfg, menu, refresh)
 	}
 
-	go watchEvents(cm, cfg, menu, logFile, refresh)
+	go watchEvents(cm, cfg, menu, logFile, popup, refresh)
 }
 
 func generateInput(th *material.Theme, w *widget.Editor, hint string, mask bool) layout.FlexChild {
