@@ -25,10 +25,17 @@ type Menu struct {
 }
 
 func refreshData(cfg *config.Config, m *Menu) {
-	gr, err := hoyo.GetData[genshin.GenshinResponse](genshin.BaseURL, cfg.GenshinServer, cfg.GenshinUID, cfg.Ltoken, cfg.Ltuid)
+	server := genshin.Servers[cfg.GenshinUID[0]]
+	gr, err := hoyo.GetData[genshin.GenshinResponse](genshin.BaseURL, server, cfg.GenshinUID, cfg.Ltoken, cfg.Ltuid)
 	if err != nil {
 		logging.Fail("Failed getting data from %s: Check your UID, ltoken, and ltuid\n%s", genshin.BaseURL, err)
 		systray.SetTooltip("Failed getting data!")
+		return
+	}
+	if gr.Retcode != 0 {
+		logging.Fail("Server responded with (%d): %s\nCheck your UID, ltoken, and ltuid", gr.Retcode, gr.Message)
+		systray.SetTooltip("Bad response from server!")
+		systray.SetIcon(icon.FullData)
 		return
 	}
 
@@ -67,11 +74,13 @@ func refreshData(cfg *config.Config, m *Menu) {
 	m.Expedition.SetTitle(fmt.Sprintf("Expeditions: %d/%d", count, gr.Data.MaxExpeditionNum))
 	m.Realm.SetTitle(fmt.Sprintf("Realm: %d/%d", gr.Data.CurrentHomeCoin, gr.Data.MaxHomeCoin))
 	m.Domain.SetTitle(fmt.Sprintf("Weekly Bosses: %d/%d", gr.Data.RemainResinDiscountNum, gr.Data.ResinDiscountNumLimit))
+
 }
 
 func popup(w webview2.WebView, cfg *config.Config) {
 	w.SetTitle("Genshin")
-	url := fmt.Sprintf("https://act.hoyolab.com/app/community-game-records-sea/m.html#/ys/realtime?role_id=%s&server=%s", cfg.GenshinUID, cfg.GenshinServer)
+	server := genshin.Servers[cfg.GenshinUID[0]]
+	url := fmt.Sprintf("https://act.hoyolab.com/app/community-game-records-sea/m.html#/ys/realtime?role_id=%s&server=%s", cfg.GenshinUID, server)
 	w.Navigate(url)
 }
 

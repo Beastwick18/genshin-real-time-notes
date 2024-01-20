@@ -24,10 +24,17 @@ type Menu struct {
 }
 
 func refreshData(cfg *config.Config, m *Menu) {
-	hr, err := hoyo.GetData[hsr.HsrResponse](hsr.BaseURL, cfg.HsrServer, cfg.HsrUID, cfg.Ltoken, cfg.Ltuid)
+	server := hsr.Servers[cfg.HsrUID[0]]
+	hr, err := hoyo.GetData[hsr.HsrResponse](hsr.BaseURL, server, cfg.HsrUID, cfg.Ltoken, cfg.Ltuid)
 	if err != nil {
 		logging.Fail("Failed getting data from %s: Check your UID, ltoken, and ltuid\n%s", hsr.BaseURL, err)
 		systray.SetTooltip("Failed getting data!")
+		return
+	}
+	if hr.Retcode != 0 {
+		logging.Fail("Server responded with (%d): %s\nCheck your UID, ltoken, and ltuid", hr.Retcode, hr.Message)
+		systray.SetTooltip("Bad response from server!")
+		systray.SetIcon(icon.HsrFullData)
 		return
 	}
 

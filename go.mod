@@ -5,6 +5,7 @@ go 1.21.5
 require (
 	gioui.org v0.4.2
 	github.com/Beastwick18/go-webview2 v0.0.0-20240118101115-e8f5832fb9a0
+	github.com/mattn/go-sqlite3 v1.14.19
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 )
 

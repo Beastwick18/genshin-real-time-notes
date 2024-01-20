@@ -2,6 +2,16 @@ package hsr
 
 const BaseURL = "https://bbs-api-os.hoyolab.com/game_record/hkrpg/api/note"
 
+var Servers = map[byte]string{
+	'1': "prod_gf_cn",
+	'2': "prod_gf_cn",
+	'5': "prod_qd_cn",
+	'6': "prod_official_usa",
+	'7': "prod_official_eur",
+	'8': "prod_official_asia",
+	'9': "prod_official_cht",
+}
+
 type HsrExpedition struct {
 	Avatars       []string `json:"avatars"`
 	Status        string   `json:"status"`

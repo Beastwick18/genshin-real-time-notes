@@ -1,12 +1,15 @@
 .PHONY: hsr_icon genshin_icon icon resin stamina all
 
+GCC := /usr/bin/x86_64-w64-mingw32-gcc
+ENV := CGO_ENABLED=1 CC=${GCC} GOOS=windows GOARCH=amd64
+
 all: resin stamina
 
 resin:
-	env GOOS=windows GOARCH=amd64 go build -ldflags "-H=windowsgui" -o resin.exe cmd/resin/main.go
+	env ${ENV} go build -ldflags "-H=windowsgui" -o resin.exe cmd/resin/main.go
 
 stamina:
-	env GOOS=windows GOARCH=amd64 go build -ldflags "-H=windowsgui" -o stamina.exe cmd/stamina/main.go
+	env ${ENV} go build -ldflags "-H=windowsgui" -o stamina.exe cmd/stamina/main.go
 
 icon: hsr_icon genshin_icon
 

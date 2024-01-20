@@ -2,6 +2,16 @@ package genshin
 
 const BaseURL = "https://bbs-api-os.hoyolab.com/game_record/genshin/api/dailyNote"
 
+var Servers = map[byte]string{
+	'1': "cn_gf01",
+	'2': "cn_gf01",
+	'5': "cn_qd01",
+	'6': "os_usa",
+	'7': "os_euro",
+	'8': "os_asia",
+	'9': "os_cht",
+}
+
 type GenshinAttendanceRewards struct {
 	Status   string `json:"status"`
 	Progress int    `json:"progress"`

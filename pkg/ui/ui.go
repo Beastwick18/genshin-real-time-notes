@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"resin/pkg/config"
+	"resin/pkg/db"
 	"resin/pkg/logging"
 	"time"
 
@@ -24,6 +25,8 @@ type CommonMenu struct {
 	Logs    *systray.MenuItem
 	Refresh *systray.MenuItem
 	Config  *systray.MenuItem
+	Import  *systray.MenuItem
+	Firefox *systray.MenuItem
 	Quit    *systray.MenuItem
 }
 
@@ -66,7 +69,7 @@ func refreshLoop[T any](cfg *config.Config, menu *T, refresh func(*config.Config
 	}
 }
 
-func watchEvents[T any](cm *CommonMenu, cfg *config.Config, menu *T, logFile string, popup func(webview2.WebView, *config.Config), refresh func(*config.Config, *T)) {
+func watchEvents[T any](cm *CommonMenu, cfg *config.Config, menu *T, logFile string, configFile string, popup func(webview2.WebView, *config.Config), refresh func(*config.Config, *T)) {
 	cm.Quit.Click(func() {
 		systray.Quit()
 	})
@@ -78,19 +81,29 @@ func watchEvents[T any](cm *CommonMenu, cfg *config.Config, menu *T, logFile str
 		logging.Info(fmt.Sprintf("Opening \"%s\"", logFile))
 		open.Start(logFile)
 	})
-	cm.Config.Click(func() {
-		go func() {
-			cm.Config.Disable()
-			w := app.NewWindow()
-			// w.Option(app.Decorated(false))
-			w.Option(app.Size(500, 250))
-			err := run(w, cfg)
-			if err != nil {
-				logging.Fail(err.Error())
-			}
-			cm.Config.Enable()
-
-		}()
+	// cm.Config.Click(func() {
+	// 	go func() {
+	// 		cm.Config.Disable()
+	// 		w := app.NewWindow()
+	// 		// w.Option(app.Decorated(false))
+	// 		w.Option(app.Size(500, 250))
+	// 		err := run(w, cfg)
+	// 		if err != nil {
+	// 			logging.Fail(err.Error())
+	// 		}
+	// 		cm.Config.Enable()
+	//
+	// 	}()
+	// })
+	cm.Firefox.Click(func() {
+		cookies := db.ReadFirefoxCookies()
+		if cookies != nil {
+			cfg.Ltoken = cookies.Ltoken_v2
+			cfg.Ltuid = cookies.Ltuid_v2
+			logging.Info("Got ltoken and ltuid from firefox")
+			config.WriteConfig(cfg, configFile)
+			refresh(cfg, menu)
+		}
 	})
 	systray.SetOnClick(func(menu systray.IMenu) {
 		createPopup(popup, cfg)
@@ -102,40 +115,28 @@ func run(w *app.Window, cfg *config.Config) error {
 
 	var ops op.Ops
 
-	var ltoken widget.Editor
-	var ltuid widget.Editor
-	var genshinUID widget.Editor
-	var genshinServer widget.Editor
-	var hsrUID widget.Editor
-	var hsrServer widget.Editor
-	var refreshInterval widget.Editor
+	var ltoken, ltuid, genshinUID, hsrUID, refreshInterval widget.Editor
+
 	ltoken.SetText(cfg.Ltoken)
 	ltuid.SetText(cfg.Ltuid)
 	genshinUID.SetText(cfg.GenshinUID)
-	genshinServer.SetText(cfg.GenshinServer)
 	hsrUID.SetText(cfg.HsrUID)
-	hsrServer.SetText(cfg.HsrServer)
 	refreshInterval.SetText(fmt.Sprintf("%d", cfg.RefreshInterval))
 	for {
 		switch e := w.NextEvent().(type) {
 		case system.DestroyEvent:
 			return e.Err
 		case system.FrameEvent:
-			// This graphics context is used for managing the rendering state.
 			gtx := layout.NewContext(&ops, e)
 
 			layout.Flex{
-				// Vertical alignment, from top to bottom
-				Axis: layout.Vertical,
-				// Empty space is left at the start, i.e. at the top
+				Axis:    layout.Vertical,
 				Spacing: layout.SpaceEnd,
 			}.Layout(gtx,
 				generateInput(th, &ltoken, "ltoken", true),
 				generateInput(th, &ltuid, "ltuid", true),
 				generateInput(th, &genshinUID, "Genshin UID", false),
-				generateInput(th, &genshinServer, "Genshin Server", false),
 				generateInput(th, &hsrUID, "Honkai: Star Rail UID", false),
-				generateInput(th, &hsrServer, "Honkai: Star Rail Server", false),
 				generateInput(th, &refreshInterval, "Refresh Interval", false),
 			)
 
@@ -160,7 +161,9 @@ func InitApp[T any](title string, tooltip string, icon []byte, logFile string, c
 	cm := &CommonMenu{}
 	cm.Logs = systray.AddMenuItem("Logs", "Show logs")
 	cm.Refresh = systray.AddMenuItem("Refresh", "Refresh data")
-	cm.Config = systray.AddMenuItem("Config", "Change the config")
+	// cm.Config = systray.AddMenuItem("Config", "Change the config")
+	cm.Import = systray.AddMenuItem("Import Cookies", "Import cookies from browser")
+	cm.Firefox = cm.Import.AddSubMenuItem("Firefox", "Load cookies from Firefox")
 	cm.Quit = systray.AddMenuItem("Quit", "Exit the application")
 
 	cfg, err := config.LoadConfig(configFile)
@@ -171,7 +174,7 @@ func InitApp[T any](title string, tooltip string, icon []byte, logFile string, c
 		go refreshLoop(cfg, menu, refresh)
 	}
 
-	go watchEvents(cm, cfg, menu, logFile, popup, refresh)
+	go watchEvents(cm, cfg, menu, logFile, configFile, popup, refresh)
 }
 
 func generateInput(th *material.Theme, w *widget.Editor, hint string, mask bool) layout.FlexChild {
@@ -179,14 +182,11 @@ func generateInput(th *material.Theme, w *widget.Editor, hint string, mask bool)
 		func(gtx layout.Context) layout.Dimensions {
 			ed := material.Editor(th, w, hint)
 
-			// Define characteristics of the input box
 			w.SingleLine = true
 			w.Alignment = text.Start
 			if mask {
 				w.Mask = '●'
 			}
-
-			// Define insets ...
 
 			margins := layout.Inset{
 				Top:   unit.Dp(10),
