@@ -10,7 +10,7 @@ Add your real-time notes to your system tray!
 </p>
 
 # 🛠️ Installing (pre-built binaries)
-- You can download a pre-built .exe from the releases tab
+- Download the [latest release](https://github.com/Beastwick18/genshin-real-time-notes/releases/latest) from the releases tab
 - Run the .exe once to generate the default `config.json`
 - Fill out the config with your data. (See below for steps to get your info)
 - The easiest way to run the program will be to create a shortcut to it
