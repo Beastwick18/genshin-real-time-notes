@@ -1,4 +1,5 @@
-# 📝 Genshin Real-Time Notes
+<h1 align="center"><img src="assets/icon.svg" width="100" /> <br />Genshin Real-Time Notes</h1>
+
 Add your real-time notes to your system tray!
 
 <p align="center">
