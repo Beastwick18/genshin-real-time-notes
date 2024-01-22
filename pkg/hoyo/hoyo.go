@@ -3,11 +3,13 @@ package hoyo
 import (
 	"bytes"
 	"compress/gzip"
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
 	"resin/pkg/config"
-	"resin/pkg/helper"
 	"time"
 )
 
@@ -103,10 +105,21 @@ func GetData[T any](baseURL string, server string, uid string, ltoken string, lt
 }
 
 func GenerateDS() string {
-	salt := "6s25p5ox5y14umn1p61aqyyvbvvl3lrt"
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+	random_bytes := make([]byte, 6)
+	for i := range random_bytes {
+		random_bytes[i] = charset[rand.Intn(len(charset))]
+	}
+
+	const salt = "6s25p5ox5y14umn1p61aqyyvbvvl3lrt"
+	r := string(random_bytes)
 	t := time.Now().Unix()
-	r := helper.RandStringBytes(6)
-	h := helper.GetMD5Hash(fmt.Sprintf("salt=%s&t=%d&r=%s", salt, t, r))
+	text := fmt.Sprintf("salt=%s&t=%d&r=%s", salt, t, r)
+
+	hash := md5.Sum([]byte(text))
+	h := hex.EncodeToString(hash[:])
+
 	return fmt.Sprintf("%d,%s,%s", t, r, h)
 }
 
