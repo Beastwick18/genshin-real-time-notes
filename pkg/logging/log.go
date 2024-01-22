@@ -40,3 +40,9 @@ func Close() {
 		Fail("Log file is nil")
 	}
 }
+
+func CapturePanic() {
+	if err := recover(); err != nil {
+		Panic("%v", err)
+	}
+}

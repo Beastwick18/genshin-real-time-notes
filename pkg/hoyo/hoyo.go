@@ -1,6 +1,7 @@
 package hoyo
 
 import (
+	"bytes"
 	"compress/gzip"
 	"fmt"
 	"io"
@@ -9,6 +10,33 @@ import (
 	"resin/pkg/helper"
 	"time"
 )
+
+func MakeDailyRequest(url string, ltoken string, ltuid string, actID string) (*http.Response, error) {
+	jsonBody := []byte(fmt.Sprintf(`{"act_id": "%s"}`, actID))
+	body := bytes.NewReader(jsonBody)
+	r, err := http.NewRequest("POST", url, body)
+	if err != nil {
+		return nil, err
+	}
+	r.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0")
+	r.Header.Add("Accept", "application/json, text/plain, */*")
+	r.Header.Add("Accept-Language", "en-US,en;q=0.5")
+	r.Header.Add("Accept-Encoding", "gzip, deflate, br")
+	r.Header.Add("Content-Type", "application/json;charset=utf-8")
+	r.Header.Add("x-rpc-device_id", "7ba783da-1cc5-4c95-87f5-760e064faf37")
+	r.Header.Add("x-rpc-app_version", "1.5.0")
+	r.Header.Add("x-rpc-platform", "4")
+	r.Header.Add("x-rpc-language", "en-us")
+	r.Header.Add("x-rpc-device_name", "")
+	r.Header.Add("Origin", "https://act.hoyolab.com")
+	r.Header.Add("Connection", "keep-alive")
+	r.Header.Add("Referer", "https://act.hoyolab.com/")
+	r.Header.Add("Cookie", fmt.Sprintf("ltoken_v2=%s; ltuid_v2=%s", ltoken, ltuid))
+
+	client := &http.Client{}
+	response, err := client.Do(r)
+	return response, nil
+}
 
 func MakeRequest(baseURL string, server string, genshinUID string, ltoken string, ltuid string) (*http.Response, error) {
 	url := fmt.Sprintf("%s?server=%s&role_id=%s", baseURL, server, genshinUID)
@@ -35,6 +63,18 @@ func MakeRequest(baseURL string, server string, genshinUID string, ltoken string
 	r.Header.Add("DS", GenerateDS())
 	response, err := client.Do(r)
 	return response, nil
+}
+
+func GetDailyData[T any](url string, ltoken string, ltuid string, actID string) (*T, error) {
+	response, err := MakeDailyRequest(url, ltoken, ltuid, actID)
+	if err != nil {
+		return nil, err
+	}
+	json, err := config.LoadJSON[T](response.Body)
+	if err != nil {
+		return nil, err
+	}
+	return json, nil
 }
 
 func GetData[T any](baseURL string, server string, uid string, ltoken string, ltuid string) (*T, error) {

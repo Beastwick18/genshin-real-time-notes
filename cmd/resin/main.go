@@ -22,6 +22,7 @@ type Menu struct {
 	Expedition *systray.MenuItem
 	Realm      *systray.MenuItem
 	Domain     *systray.MenuItem
+	CheckIn    *systray.MenuItem
 }
 
 func refreshData(cfg *config.Config, m *Menu) {
@@ -84,15 +85,30 @@ func popup(w webview2.WebView, cfg *config.Config) {
 	w.Navigate(url)
 }
 
+func watchEvents(cfg *config.Config, m *Menu) {
+	m.CheckIn.Click(func() {
+		logging.Info("Clicked check in")
+		json, err := hoyo.GetDailyData[genshin.GenshinDailyResponse](genshin.DailyURL, cfg.Ltoken, cfg.Ltuid, genshin.ActID)
+		if err != nil {
+			logging.Fail("Failed getting check in repsonse\n%s", err)
+			return
+		}
+		logging.Info("%d: %s", json.Retcode, json.Message)
+	})
+}
+
 func onReady() {
+	defer logging.CapturePanic()
 	m := &Menu{}
 	m.Resin = ui.CreateMenuItem("Resin: ?/?", icon.NotFullData)
 	m.Commission = ui.CreateMenuItem("Commissions: ?/?", icon.CommissionData)
 	m.Expedition = ui.CreateMenuItem("Expeditions: ?/?", icon.ExpeditionData)
 	m.Realm = ui.CreateMenuItem("Realm: ?/?", icon.RealmData)
 	m.Domain = ui.CreateMenuItem("Weekly Bosses: ?/?", icon.WeeklyBossData)
+	m.CheckIn = ui.CreateMenuItem("Check In", icon.GenshinCheckIn)
 
-	ui.InitApp("Genshin Real-Time Notes", "?/?", icon.NotFullData, ".\\resin.log", ".\\config.json", m, popup, refreshData)
+	cfg := ui.InitApp("Genshin Real-Time Notes", "?/?", icon.NotFullData, ".\\resin.log", ".\\config.json", m, popup, refreshData)
+	watchEvents(cfg, m)
 }
 
 func onExit() {
@@ -102,6 +118,11 @@ func onExit() {
 }
 
 func main() {
+	defer func() {
+		if err := recover(); err != nil {
+			logging.Panic("%v", err)
+		}
+	}()
 	systray.Run(onReady, onExit)
 	app.Main()
 }

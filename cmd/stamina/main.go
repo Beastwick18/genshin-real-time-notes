@@ -21,6 +21,7 @@ type Menu struct {
 	Expedition *systray.MenuItem
 	Reserve    *systray.MenuItem
 	EchoOfWar  *systray.MenuItem
+	CheckIn    *systray.MenuItem
 }
 
 func refreshData(cfg *config.Config, m *Menu) {
@@ -74,15 +75,30 @@ func popup(w webview2.WebView, cfg *config.Config) {
 	w.Navigate("https://act.hoyolab.com/app/community-game-records-sea/rpg/m.html#/hsr")
 }
 
+func watchEvents(cfg *config.Config, m *Menu) {
+	m.CheckIn.Click(func() {
+		logging.Info("Clicked check in")
+		json, err := hoyo.GetDailyData[hsr.HsrDailyResponse](hsr.DailyURL, cfg.Ltoken, cfg.Ltuid, hsr.ActID)
+		if err != nil {
+			logging.Fail("Failed getting check in repsonse\n%s", err)
+			return
+		}
+		logging.Info("%d: %s", json.Retcode, json.Message)
+	})
+}
+
 func onReady() {
+	defer logging.CapturePanic()
 	m := &Menu{}
 	m.Stamina = ui.CreateMenuItem("Stamina: ?/?", icon.HsrNotFullData)
 	m.Training = ui.CreateMenuItem("Training: ?/?", icon.TrainingData)
 	m.Expedition = ui.CreateMenuItem("Expeditions: ?/?", icon.HsrExpeditionData)
 	m.Reserve = ui.CreateMenuItem("Expeditions: ?/?", icon.HsrFullData)
 	m.EchoOfWar = ui.CreateMenuItem("Echo of War: ?/?", icon.EchoOfWarData)
+	m.CheckIn = ui.CreateMenuItem("Check In", icon.HsrCheckIn)
 
-	ui.InitApp("Honkai Star Rail Real-Time Notes", "?/?", icon.HsrNotFullData, ".\\stamina.log", ".\\config.json", m, popup, refreshData)
+	cfg := ui.InitApp("Honkai Star Rail Real-Time Notes", "?/?", icon.HsrNotFullData, ".\\stamina.log", ".\\config.json", m, popup, refreshData)
+	watchEvents(cfg, m)
 }
 
 func onExit() {
@@ -92,6 +108,7 @@ func onExit() {
 }
 
 func main() {
+	defer logging.CapturePanic()
 	systray.Run(onReady, onExit)
 	app.Main()
 }

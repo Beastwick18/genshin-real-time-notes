@@ -145,7 +145,7 @@ func run(w *app.Window, cfg *config.Config) error {
 	}
 }
 
-func InitApp[T any](title string, tooltip string, icon []byte, logFile string, configFile string, menu *T, popup func(webview2.WebView, *config.Config), refresh func(*config.Config, *T)) {
+func InitApp[T any](title string, tooltip string, icon []byte, logFile string, configFile string, menu *T, popup func(webview2.WebView, *config.Config), refresh func(*config.Config, *T)) *config.Config {
 	systray.SetOnClick(func(menu systray.IMenu) {
 		menu.ShowMenu()
 	})
@@ -174,7 +174,8 @@ func InitApp[T any](title string, tooltip string, icon []byte, logFile string, c
 		go refreshLoop(cfg, menu, refresh)
 	}
 
-	go watchEvents(cm, cfg, menu, logFile, configFile, popup, refresh)
+	watchEvents(cm, cfg, menu, logFile, configFile, popup, refresh)
+	return cfg
 }
 
 func generateInput(th *material.Theme, w *widget.Editor, hint string, mask bool) layout.FlexChild {

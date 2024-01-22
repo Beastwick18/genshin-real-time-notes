@@ -2,6 +2,9 @@ package genshin
 
 const BaseURL = "https://bbs-api-os.hoyolab.com/game_record/genshin/api/dailyNote"
 
+const DailyURL = "https://sg-hk4e-api.hoyolab.com/event/sol/sign?lang=en-us"
+const ActID = "e202102251931481"
+
 var Servers = map[byte]string{
 	'1': "cn_gf01",
 	'2': "cn_gf01",
@@ -77,4 +80,10 @@ type GenshinResponse struct {
 	Retcode int         `json:"retcode"`
 	Message string      `json:"message"`
 	Data    GenshinData `json:"data"`
+}
+
+type GenshinDailyResponse struct {
+	Retcode int                    `json:"retcode"`
+	Message string                 `json:"message"`
+	Data    map[string]interface{} `json:"data"`
 }

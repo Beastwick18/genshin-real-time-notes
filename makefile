@@ -3,13 +3,19 @@
 GCC := /usr/bin/x86_64-w64-mingw32-gcc
 ENV := CGO_ENABLED=1 CC=${GCC} GOOS=windows GOARCH=amd64
 
-all: resin stamina
+all: resin stamina genshinDaily hsrDaily
 
 resin:
-	env ${ENV} go build -ldflags "-H=windowsgui" -o resin.exe cmd/resin/main.go
+	${ENV} go build -ldflags "-H=windowsgui" -o resin.exe cmd/resin/main.go
 
 stamina:
-	env ${ENV} go build -ldflags "-H=windowsgui" -o stamina.exe cmd/stamina/main.go
+	${ENV} go build -ldflags "-H=windowsgui" -o stamina.exe cmd/stamina/main.go
+
+genshinDaily:
+	${ENV} go build -ldflags "-H=windowsgui" -o genshinDaily.exe cmd/genshinDaily/main.go
+
+hsrDaily:
+	${ENV} go build -ldflags "-H=windowsgui" -o hsrDaily.exe cmd/hsrDaily/main.go
 
 icon: hsr_icon genshin_icon
 
@@ -19,6 +25,7 @@ hsr_icon:
 	${GOPATH}/bin/2goarray TrainingData icon < assets/hsr/daily.ico > pkg/icon/training.go
 	${GOPATH}/bin/2goarray HsrExpeditionData icon < assets/hsr/expedition.ico > pkg/icon/hsrExpedition.go
 	${GOPATH}/bin/2goarray EchoOfWarData icon < assets/hsr/echo.ico > pkg/icon/echo.go
+	${GOPATH}/bin/2goarray HsrCheckIn icon < assets/hsr/checkinhsr.ico > pkg/icon/checkinhsr.go
 
 genshin_icon:
 	${GOPATH}/bin/2goarray FullData icon < assets/genshin/full.ico > pkg/icon/full.go
@@ -27,3 +34,4 @@ genshin_icon:
 	${GOPATH}/bin/2goarray ExpeditionData icon < assets/genshin/expedition.ico > pkg/icon/expedition.go
 	${GOPATH}/bin/2goarray RealmData icon < assets/genshin/realm.ico > pkg/icon/realm.go
 	${GOPATH}/bin/2goarray WeeklyBossData icon < assets/genshin/domain.ico > pkg/icon/domain.go
+	${GOPATH}/bin/2goarray GenshinCheckIn icon < assets/genshin/checkin.ico > pkg/icon/checkin.go
