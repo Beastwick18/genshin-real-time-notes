@@ -3,19 +3,13 @@
 GCC := /usr/bin/x86_64-w64-mingw32-gcc
 ENV := CGO_ENABLED=1 CC=${GCC} GOOS=windows GOARCH=amd64
 
-all: resin stamina genshinDaily hsrDaily
+all: resin stamina
 
 resin:
 	${ENV} go build -ldflags "-H=windowsgui" -o resin.exe cmd/resin/main.go
 
 stamina:
 	${ENV} go build -ldflags "-H=windowsgui" -o stamina.exe cmd/stamina/main.go
-
-genshinDaily:
-	${ENV} go build -ldflags "-H=windowsgui" -o genshinDaily.exe cmd/genshinDaily/main.go
-
-hsrDaily:
-	${ENV} go build -ldflags "-H=windowsgui" -o hsrDaily.exe cmd/hsrDaily/main.go
 
 icon: hsr_icon genshin_icon
 

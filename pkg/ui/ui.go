@@ -31,7 +31,11 @@ func refreshLoop[T any](cfg *config.Config, menu *T, refresh func(*config.Config
 	for {
 		refresh(cfg, menu)
 		logging.Info("Refreshed")
-		time.Sleep(time.Duration(cfg.RefreshInterval) * time.Second)
+		if cfg == nil {
+			time.Sleep(time.Duration(60) * time.Second)
+		} else {
+			time.Sleep(time.Duration(cfg.RefreshInterval) * time.Second)
+		}
 	}
 }
 
@@ -112,7 +116,6 @@ func InitApp[T any](title string, tooltip string, icon []byte, logFile string, c
 		cfg, err = login(app, configFile, cfg, menu, refresh)
 		if err != nil {
 			logging.Fail("Failed to login")
-			return nil
 		}
 	}
 	go refreshLoop(cfg, menu, refresh)

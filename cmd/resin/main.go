@@ -24,6 +24,9 @@ type Menu struct {
 }
 
 func refreshData(cfg *config.Config, m *Menu) {
+	if cfg == nil || m == nil {
+		return
+	}
 	server := genshin.Servers[cfg.UID[0]]
 	gr, err := hoyo.GetData[genshin.GenshinResponse](genshin.BaseURL, server, cfg.UID, cfg.Ltoken, cfg.Ltuid)
 	if err != nil {
