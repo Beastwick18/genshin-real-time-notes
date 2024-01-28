@@ -67,7 +67,7 @@ func login[T any](app string, configFile string, cfg *config.Config, menu *T, re
 		logging.Fail("Failed to get working directory")
 		return nil, err
 	}
-	exe := path.Join(wd, "login", "WinFormsApp1.exe")
+	exe := path.Join(wd, "login", "WebViewLogin.exe")
 	cmd := exec.Command(exe, app)
 	cmd.Dir = "."
 	// Block until finished

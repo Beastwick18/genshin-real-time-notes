@@ -4,5 +4,5 @@
 /curl.sh
 /stamina
 *.log
-/login/WinFormsApp1.exe.WebView2/
+/login/*.exe.WebView2/
 *.zip
