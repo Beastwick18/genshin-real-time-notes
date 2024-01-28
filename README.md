@@ -21,14 +21,18 @@ Add your real-time notes to your system tray!
 
 # 🍪 Logging in to Hoyolab
 1. Wait for the web page to load, then login with your email and password.
+
 <p align="center">
     <img width=300 src="./assets/login.png" />
 </p>
+
 2. Wait for the Battle Chronicle page to load, and copy your UID.
 3. Paste your UID into the input box at the bottom.
+
 <p align="center">
     <img width=300 src="./assets/uid.png" />
 </p>
+
 4. *(optional)* Change the refresh interval to match how often you would like your data to refresh.
 5. Click "Done"
 
