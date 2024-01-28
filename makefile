@@ -1,4 +1,4 @@
-.PHONY: hsr_icon genshin_icon icon resin stamina all
+.PHONY: hsr_icon genshin_icon icon resin stamina all clean
 
 GCC := /usr/bin/x86_64-w64-mingw32-gcc
 ENV := CGO_ENABLED=1 CC=${GCC} GOOS=windows GOARCH=amd64
@@ -10,6 +10,12 @@ resin:
 
 stamina:
 	${ENV} go build -ldflags "-H=windowsgui" -o stamina.exe cmd/stamina/main.go
+
+clean:
+	rm -rf resin*.exe
+	rm -rf stamina*.exe
+	rm -rf *cookie.json
+	rm -rf login/*.exe.WebView2
 
 icon: hsr_icon genshin_icon
 
