@@ -4,44 +4,30 @@ Add your real-time notes to your system tray!
 
 <p align="center">
     <img src="./assets/genshin.png" />&nbsp;
-    <img  src="./assets/hsr.png" />
+    <img src="./assets/hsr.png" />
 </p>
 <p align="center">
     <img width=300 src="./assets/both.png" />
 </p>
 
 # 🛠️ Installing (pre-built binaries)
-- Download the [latest release](https://github.com/Beastwick18/genshin-real-time-notes/releases/latest) from the releases tab
-- Run the .exe once to generate the default `config.json`
-- Fill out the config with your data. (See below for steps to get your info)
-- The easiest way to run the program will be to create a shortcut to it
-- Make sure the config.json is in the same directory as the .exe
+- Download the [latest .zip release](https://github.com/Beastwick18/genshin-real-time-notes/releases/latest) from the releases tab
+- Ensure you have [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2?form=MA13LH#download) installed
+  - Select "Evergreen Standalone Installer"
+  - WebView2 comes pre-installed on Windows 11, so you may not have to install it.
+- Extract this to wherever you would like it to be installed
+- Login to the Hoyolab popup
+- Fill out your UID, and set the refresh interval
+- Click "done," and everything should be working!
 
-# 🍪 Getting session info from hoyolab
-1. First go to https://www.hoyolab.com/home and log in
-2. Press Ctrl + Shift + I to open the developer menu
-3. On Firefox, navigate to the Storage tab
-    - The process should be similar on other browsers
-4. Under cookies, select https://www.hoyolab.com
+# 🍪 Logging in to Hoyolab
+1. Wait for the web page to load, then login with your email and password.
+2. Wait for the Battle Chronicle page to load, and copy your UID
+3. Paste your UID into the input box at the bottom
+4. *(optional)* Change the refresh interval to match how often you would like your data to refresh.
+5. Click "Done"
 
-<p align="center">
-    <img src="./assets/cookies.png" />
-</p>
-
-5. Below should be the values needed to fill in the config file
-    - `ltuid_v2` is the same as `ltuid` in the config
-    - `ltoken_v2` is the same as `ltoken` in the config
-    - `genshin_uuid` is your uuid found in-game in the bottom right
-    - `server` be the string corresponding to the first digit of your Genshin uuid:
-        - 1: cn_gf01
-        - 2: cn_gf01
-        - 5: cn_qd01
-        - 6: os_usa
-        - 7: os_euro
-        - 8: os_asia
-        - 9: os_cht
-
-# 🏃‍♂️ Run on startup
+# 🏃 Run on startup
 - Create a shortcut to the .exe
 - Press `Win + R` and type in `shell:startup` and hit Enter.
 - Copy the shortcut to this location
@@ -57,4 +43,4 @@ cd genshin-real-time-notes
 ```
 make
 ```
-- Which will generate `resin.exe`
+- Which will generate `resin.exe` and `stamina.exe` for Genshin and Honkai: Star-Rail respectively.
