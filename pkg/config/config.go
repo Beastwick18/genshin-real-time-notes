@@ -8,20 +8,22 @@ import (
 )
 
 type Config struct {
-	RefreshInterval int    `json:"refresh_interval"`
-	GenshinUID      string `json:"genshin_uid"`
-	HsrUID          string `json:"hsr_uid"`
-	Ltoken          string `json:"ltoken"`
-	Ltuid           string `json:"ltuid"`
+	RefreshInterval int `json:"refresh_interval"`
+	// GenshinUID      string `json:"genshin_uid"`
+	// HsrUID          string `json:"hsr_uid"`
+	UID    string `json:"uid"`
+	Ltoken string `json:"ltoken_v2"`
+	Ltuid  string `json:"ltuid_v2"`
 }
 
-var DefaultConfig Config = Config{
-	RefreshInterval: 60,
-	GenshinUID:      "genshin uid",
-	HsrUID:          "hsr uid",
-	Ltoken:          "token",
-	Ltuid:           "mihoyo uid",
-}
+// var DefaultConfig Config = Config{
+// 	RefreshInterval: 60,
+// 	// GenshinUID:      "genshin uid",
+// 	// HsrUID:          "hsr uid",
+// 	UID: "uid"
+// 	Ltoken:          "token",
+// 	Ltuid:           "mihoyo uid",
+// }
 
 func LoadJSON[T any](reader io.Reader) (*T, error) {
 	var cfg T
@@ -47,9 +49,8 @@ func WriteConfig(cfg *Config, configPath string) error {
 
 func LoadConfig(configPath string) (*Config, error) {
 	if _, err := os.Stat(configPath); err != nil {
-		if err = WriteConfig(&DefaultConfig, configPath); err != nil {
-			logging.Fail("Unable to write default config")
-		}
+		logging.Fail("Unable to read config %s", configPath)
+		return nil, err
 	}
 	var cfg Config
 	jsonFile, err := os.Open(configPath)

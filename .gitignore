@@ -1,6 +1,7 @@
-/config.json
+/*.json
 /resin
 /*.exe
 /curl.sh
 /stamina
 *.log
+/login/WinFormsApp1.exe.WebView2/

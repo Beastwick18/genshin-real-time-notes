@@ -11,8 +11,6 @@ import (
 	"resin/pkg/ui"
 	"strconv"
 
-	"gioui.org/app"
-	"github.com/Beastwick18/go-webview2"
 	"github.com/energye/systray"
 )
 
@@ -26,8 +24,8 @@ type Menu struct {
 }
 
 func refreshData(cfg *config.Config, m *Menu) {
-	server := genshin.Servers[cfg.GenshinUID[0]]
-	gr, err := hoyo.GetData[genshin.GenshinResponse](genshin.BaseURL, server, cfg.GenshinUID, cfg.Ltoken, cfg.Ltuid)
+	server := genshin.Servers[cfg.UID[0]]
+	gr, err := hoyo.GetData[genshin.GenshinResponse](genshin.BaseURL, server, cfg.UID, cfg.Ltoken, cfg.Ltuid)
 	if err != nil {
 		logging.Fail("Failed getting data from %s: Check your UID, ltoken, and ltuid\n%s", genshin.BaseURL, err)
 		systray.SetTooltip("Failed getting data!")
@@ -78,13 +76,6 @@ func refreshData(cfg *config.Config, m *Menu) {
 
 }
 
-func popup(w webview2.WebView, cfg *config.Config) {
-	w.SetTitle("Genshin")
-	server := genshin.Servers[cfg.GenshinUID[0]]
-	url := fmt.Sprintf("https://act.hoyolab.com/app/community-game-records-sea/m.html#/ys/realtime?role_id=%s&server=%s", cfg.GenshinUID, server)
-	w.Navigate(url)
-}
-
 func watchEvents(cfg *config.Config, m *Menu) {
 	m.CheckIn.Click(func() {
 		logging.Info("Clicked check in")
@@ -107,7 +98,7 @@ func onReady() {
 	m.Domain = ui.CreateMenuItem("Weekly Bosses: ?/?", icon.WeeklyBossData)
 	m.CheckIn = ui.CreateMenuItem("Check In", icon.GenshinCheckIn)
 
-	cfg := ui.InitApp("Genshin Real-Time Notes", "?/?", icon.NotFullData, ".\\resin.log", ".\\config.json", m, popup, refreshData)
+	cfg := ui.InitApp("Genshin Real-Time Notes", "?/?", icon.NotFullData, ".\\resin.log", ".\\genshin_cookie.json", m, "genshin", refreshData)
 	watchEvents(cfg, m)
 }
 
@@ -124,5 +115,4 @@ func main() {
 		}
 	}()
 	systray.Run(onReady, onExit)
-	app.Main()
 }

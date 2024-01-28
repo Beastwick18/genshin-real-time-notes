@@ -7,19 +7,19 @@ import (
 
 var f *os.File
 
-func Info(fmt string, v ...interface{}) {
+func Info(fmt string, v ...any) {
 	log.Printf("[INFO] "+fmt, v...)
 }
 
-func Panic(fmt string, v ...interface{}) {
+func Panic(fmt string, v ...any) {
 	log.Printf("[PANIC] "+fmt, v...)
 }
 
-func Fail(fmt string, v ...interface{}) {
+func Fail(fmt string, v ...any) {
 	log.Printf("[FAIL] "+fmt, v...)
 }
 
-func Warn(fmt string, v ...interface{}) {
+func Warn(fmt string, v ...any) {
 	log.Printf("[WARN] "+fmt, v...)
 }
 

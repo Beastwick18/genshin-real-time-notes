@@ -2,32 +2,23 @@ package ui
 
 import (
 	"fmt"
-	"image/color"
+	"os"
+	"os/exec"
+	"path"
 	"resin/pkg/config"
-	"resin/pkg/db"
 	"resin/pkg/logging"
 	"time"
 
-	"gioui.org/app"
-	"gioui.org/io/system"
-	"gioui.org/layout"
-	"gioui.org/op"
-	"gioui.org/text"
-	"gioui.org/unit"
-	"gioui.org/widget"
-	"gioui.org/widget/material"
-	"github.com/Beastwick18/go-webview2"
 	"github.com/energye/systray"
 	"github.com/skratchdot/open-golang/open"
 )
 
 type CommonMenu struct {
-	Logs    *systray.MenuItem
-	Refresh *systray.MenuItem
-	Config  *systray.MenuItem
-	Import  *systray.MenuItem
-	Firefox *systray.MenuItem
-	Quit    *systray.MenuItem
+	Refresh  *systray.MenuItem
+	Quit     *systray.MenuItem
+	Advanced *systray.MenuItem
+	Logs     *systray.MenuItem
+	Login    *systray.MenuItem
 }
 
 func CreateMenuItem(title string, icon []byte) *systray.MenuItem {
@@ -36,40 +27,15 @@ func CreateMenuItem(title string, icon []byte) *systray.MenuItem {
 	return item
 }
 
-func createPopup(popup func(webview2.WebView, *config.Config), cfg *config.Config) {
-	w := webview2.NewWithUserAgent(webview2.WebViewOptions{
-		Debug:     true,
-		AutoFocus: true,
-		WindowOptions: webview2.WindowOptions{
-			Title:  "Webview",
-			PosX:   -404,
-			PosY:   -745,
-			Width:  384,
-			Height: 654,
-			IconId: 2, // icon resource id
-			Center: false,
-		},
-	}, "Mozilla/5.0 (Linux; Android 11; SAMSUNG SM-G973U) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/14.2 Chrome/87.0.4280.141 Mobile Safari/537.36")
-	if w == nil {
-		logging.Fail("Failed to load webview")
-		return
-	}
-	logging.Info("Opening webview")
-	w.SetSize(384, 654, webview2.HintNone)
-	popup(w, cfg)
-
-	w.Run()
-	w.Destroy()
-}
-
 func refreshLoop[T any](cfg *config.Config, menu *T, refresh func(*config.Config, *T)) {
 	for {
 		refresh(cfg, menu)
+		logging.Info("Refreshed")
 		time.Sleep(time.Duration(cfg.RefreshInterval) * time.Second)
 	}
 }
 
-func watchEvents[T any](cm *CommonMenu, cfg *config.Config, menu *T, logFile string, configFile string, popup func(webview2.WebView, *config.Config), refresh func(*config.Config, *T)) {
+func watchEvents[T any](cm *CommonMenu, cfg *config.Config, menu *T, logFile string, configFile string, app string, refresh func(*config.Config, *T)) {
 	cm.Quit.Click(func() {
 		systray.Quit()
 	})
@@ -81,71 +47,45 @@ func watchEvents[T any](cm *CommonMenu, cfg *config.Config, menu *T, logFile str
 		logging.Info(fmt.Sprintf("Opening \"%s\"", logFile))
 		open.Start(logFile)
 	})
-	// cm.Config.Click(func() {
-	// 	go func() {
-	// 		cm.Config.Disable()
-	// 		w := app.NewWindow()
-	// 		// w.Option(app.Decorated(false))
-	// 		w.Option(app.Size(500, 250))
-	// 		err := run(w, cfg)
-	// 		if err != nil {
-	// 			logging.Fail(err.Error())
-	// 		}
-	// 		cm.Config.Enable()
-	//
-	// 	}()
-	// })
-	cm.Firefox.Click(func() {
-		cookies := db.ReadFirefoxCookies()
-		if cookies != nil {
-			cfg.Ltoken = cookies.Ltoken_v2
-			cfg.Ltuid = cookies.Ltuid_v2
-			logging.Info("Got ltoken and ltuid from firefox")
-			config.WriteConfig(cfg, configFile)
-			refresh(cfg, menu)
+	cm.Login.Click(func() {
+		var err error
+		cfg, err = login(app, configFile, cfg, menu, refresh)
+		if err != nil {
+			logging.Fail("Failed to login:\n%s", err)
+			return
 		}
-	})
-	systray.SetOnClick(func(menu systray.IMenu) {
-		createPopup(popup, cfg)
 	})
 }
 
-func run(w *app.Window, cfg *config.Config) error {
-	th := material.NewTheme()
-
-	var ops op.Ops
-
-	var ltoken, ltuid, genshinUID, hsrUID, refreshInterval widget.Editor
-
-	ltoken.SetText(cfg.Ltoken)
-	ltuid.SetText(cfg.Ltuid)
-	genshinUID.SetText(cfg.GenshinUID)
-	hsrUID.SetText(cfg.HsrUID)
-	refreshInterval.SetText(fmt.Sprintf("%d", cfg.RefreshInterval))
-	for {
-		switch e := w.NextEvent().(type) {
-		case system.DestroyEvent:
-			return e.Err
-		case system.FrameEvent:
-			gtx := layout.NewContext(&ops, e)
-
-			layout.Flex{
-				Axis:    layout.Vertical,
-				Spacing: layout.SpaceEnd,
-			}.Layout(gtx,
-				generateInput(th, &ltoken, "ltoken", true),
-				generateInput(th, &ltuid, "ltuid", true),
-				generateInput(th, &genshinUID, "Genshin UID", false),
-				generateInput(th, &hsrUID, "Honkai: Star Rail UID", false),
-				generateInput(th, &refreshInterval, "Refresh Interval", false),
-			)
-
-			e.Frame(gtx.Ops)
-		}
+func login[T any](app string, configFile string, cfg *config.Config, menu *T, refresh func(*config.Config, *T)) (*config.Config, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		logging.Fail("Failed to get working directory")
+		return nil, err
 	}
+	exe := path.Join(wd, "login", "WinFormsApp1.exe")
+	cmd := exec.Command(exe, app)
+	cmd.Dir = "."
+	// Block until finished
+	_, err = cmd.CombinedOutput()
+	if err != nil {
+		logging.Fail("Failed to show login window:\n%s", err)
+		return nil, err
+	}
+	logging.Info("Done")
+
+	cookies, err := config.LoadConfig(configFile)
+	if err != nil {
+		logging.Fail("Failed to get webview cookies")
+		return nil, err
+	}
+	logging.Info("Got ltoken and ltuid from webview")
+	cfg = cookies
+	refresh(cookies, menu)
+	return cfg, nil
 }
 
-func InitApp[T any](title string, tooltip string, icon []byte, logFile string, configFile string, menu *T, popup func(webview2.WebView, *config.Config), refresh func(*config.Config, *T)) *config.Config {
+func InitApp[T any](title string, tooltip string, icon []byte, logFile string, configFile string, menu *T, app string, refresh func(*config.Config, *T)) *config.Config {
 	systray.SetOnClick(func(menu systray.IMenu) {
 		menu.ShowMenu()
 	})
@@ -159,64 +99,24 @@ func InitApp[T any](title string, tooltip string, icon []byte, logFile string, c
 	systray.AddSeparator()
 
 	cm := &CommonMenu{}
-	cm.Logs = systray.AddMenuItem("Logs", "Show logs")
+
+	cm.Advanced = systray.AddMenuItem("Advanced", "Advanced options")
+	cm.Logs = cm.Advanced.AddSubMenuItem("Logs", "Show logs")
+	cm.Login = cm.Advanced.AddSubMenuItem("Login", "Login To Hoyolab")
+
 	cm.Refresh = systray.AddMenuItem("Refresh", "Refresh data")
-	// cm.Config = systray.AddMenuItem("Config", "Change the config")
-	cm.Import = systray.AddMenuItem("Import Cookies", "Import cookies from browser")
-	cm.Firefox = cm.Import.AddSubMenuItem("Firefox", "Load cookies from Firefox")
 	cm.Quit = systray.AddMenuItem("Quit", "Exit the application")
 
 	cfg, err := config.LoadConfig(configFile)
 	if err != nil {
-		logging.Fail("Failed loading config file. Make sure it is present in the same directory you are running the program from.\n%s", err)
-		systray.SetTooltip("Error loading config!")
-	} else {
-		go refreshLoop(cfg, menu, refresh)
+		cfg, err = login(app, configFile, cfg, menu, refresh)
+		if err != nil {
+			logging.Fail("Failed to login")
+			return nil
+		}
 	}
+	go refreshLoop(cfg, menu, refresh)
 
-	watchEvents(cm, cfg, menu, logFile, configFile, popup, refresh)
+	watchEvents(cm, cfg, menu, logFile, configFile, app, refresh)
 	return cfg
-}
-
-func generateInput(th *material.Theme, w *widget.Editor, hint string, mask bool) layout.FlexChild {
-	return layout.Rigid(
-		func(gtx layout.Context) layout.Dimensions {
-			ed := material.Editor(th, w, hint)
-
-			w.SingleLine = true
-			w.Alignment = text.Start
-			if mask {
-				w.Mask = '●'
-			}
-
-			margins := layout.Inset{
-				Top:   unit.Dp(10),
-				Left:  unit.Dp(10),
-				Right: unit.Dp(10),
-			}
-			padding := layout.Inset{
-				Top:    unit.Dp(2),
-				Bottom: unit.Dp(2),
-				Left:   unit.Dp(5),
-				Right:  unit.Dp(5),
-			}
-			// ... and borders ...
-			border := widget.Border{
-				Color:        color.NRGBA{R: 204, G: 204, B: 204, A: 255},
-				CornerRadius: unit.Dp(3),
-				Width:        unit.Dp(2),
-			}
-
-			// ... before laying it out, one inside the other
-			return margins.Layout(gtx,
-				func(gtx layout.Context) layout.Dimensions {
-					return border.Layout(gtx,
-						func(gtx layout.Context) layout.Dimensions {
-							return padding.Layout(gtx, ed.Layout)
-						},
-					)
-				},
-			)
-		},
-	)
 }

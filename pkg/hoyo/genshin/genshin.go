@@ -56,24 +56,24 @@ type GenshinExpedition struct {
 }
 
 type GenshinData struct {
-	CurrentResin              int                    `json:"current_resin"`
-	MaxResin                  int                    `json:"max_resin"`
-	ResinRecoveryTime         string                 `json:"resin_recovery_time"`
-	FinishedTaskNum           int                    `json:"finished_task_num"`
-	TotalTaskNum              int                    `json:"total_task_num"`
-	IsExtraTaskRewardReceived bool                   `json:"is_extra_task_reward_received"`
-	RemainResinDiscountNum    int                    `json:"remain_resin_discount_num"`
-	ResinDiscountNumLimit     int                    `json:"resin_discount_num_limit"`
-	CurrentExpeditionNum      int                    `json:"current_expedition_num"`
-	MaxExpeditionNum          int                    `json:"max_expedition_num"`
-	Expeditions               []GenshinExpedition    `json:"expeditions"`
-	CurrentHomeCoin           int                    `json:"current_home_coin"`
-	MaxHomeCoin               int                    `json:"max_home_coin"`
-	HomeCoinRecoveryTime      string                 `json:"home_coin_recovery_time"`
-	CalendarURL               string                 `json:"calendar_url"`
-	Transformer               string                 `json:"transformer"`
-	DailyTask                 GenshinDailyTask       `json:"daily_task"`
-	ArchonQuestProgress       map[string]interface{} `json:"archon_quest_progress"`
+	CurrentResin              int                 `json:"current_resin"`
+	MaxResin                  int                 `json:"max_resin"`
+	ResinRecoveryTime         string              `json:"resin_recovery_time"`
+	FinishedTaskNum           int                 `json:"finished_task_num"`
+	TotalTaskNum              int                 `json:"total_task_num"`
+	IsExtraTaskRewardReceived bool                `json:"is_extra_task_reward_received"`
+	RemainResinDiscountNum    int                 `json:"remain_resin_discount_num"`
+	ResinDiscountNumLimit     int                 `json:"resin_discount_num_limit"`
+	CurrentExpeditionNum      int                 `json:"current_expedition_num"`
+	MaxExpeditionNum          int                 `json:"max_expedition_num"`
+	Expeditions               []GenshinExpedition `json:"expeditions"`
+	CurrentHomeCoin           int                 `json:"current_home_coin"`
+	MaxHomeCoin               int                 `json:"max_home_coin"`
+	HomeCoinRecoveryTime      string              `json:"home_coin_recovery_time"`
+	CalendarURL               string              `json:"calendar_url"`
+	Transformer               string              `json:"transformer"`
+	DailyTask                 GenshinDailyTask    `json:"daily_task"`
+	ArchonQuestProgress       map[string]any      `json:"archon_quest_progress"`
 }
 
 type GenshinResponse struct {
@@ -83,7 +83,21 @@ type GenshinResponse struct {
 }
 
 type GenshinDailyResponse struct {
-	Retcode int                    `json:"retcode"`
-	Message string                 `json:"message"`
-	Data    map[string]interface{} `json:"data"`
+	Retcode int              `json:"retcode"`
+	Message string           `json:"message"`
+	Data    GenshinDailyData `json:"data"`
+}
+
+type GenshinDailyData struct {
+	Code      string               `json:"code"`
+	FirstBind bool                 `json:"first_bind"`
+	GtResult  GenshinDailyGtResult `json:"gt_result"`
+}
+
+type GenshinDailyGtResult struct {
+	RiskCode  int    `json:"risk_code"`
+	Gt        string `json:"gt"`
+	Challenge string `json:"challenge"`
+	Success   int    `json:"success"`
+	IsRisk    bool   `json:"is_risk"`
 }

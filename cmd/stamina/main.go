@@ -10,8 +10,6 @@ import (
 	"resin/pkg/logging"
 	"resin/pkg/ui"
 
-	"gioui.org/app"
-	"github.com/Beastwick18/go-webview2"
 	"github.com/energye/systray"
 )
 
@@ -25,8 +23,8 @@ type Menu struct {
 }
 
 func refreshData(cfg *config.Config, m *Menu) {
-	server := hsr.Servers[cfg.HsrUID[0]]
-	hr, err := hoyo.GetData[hsr.HsrResponse](hsr.BaseURL, server, cfg.HsrUID, cfg.Ltoken, cfg.Ltuid)
+	server := hsr.Servers[cfg.UID[0]]
+	hr, err := hoyo.GetData[hsr.HsrResponse](hsr.BaseURL, server, cfg.UID, cfg.Ltoken, cfg.Ltuid)
 	if err != nil {
 		logging.Fail("Failed getting data from %s: Check your UID, ltoken, and ltuid\n%s", hsr.BaseURL, err)
 		systray.SetTooltip("Failed getting data!")
@@ -70,11 +68,6 @@ func refreshData(cfg *config.Config, m *Menu) {
 	m.EchoOfWar.SetTitle(fmt.Sprintf("Echo of War: %d/%d", hr.Data.WeeklyCocoonCnt, hr.Data.WeeklyCocoonLimit))
 }
 
-func popup(w webview2.WebView, cfg *config.Config) {
-	w.SetTitle("Honkai: Star Rail")
-	w.Navigate("https://act.hoyolab.com/app/community-game-records-sea/rpg/m.html#/hsr")
-}
-
 func watchEvents(cfg *config.Config, m *Menu) {
 	m.CheckIn.Click(func() {
 		logging.Info("Clicked check in")
@@ -97,7 +90,7 @@ func onReady() {
 	m.EchoOfWar = ui.CreateMenuItem("Echo of War: ?/?", icon.EchoOfWarData)
 	m.CheckIn = ui.CreateMenuItem("Check In", icon.HsrCheckIn)
 
-	cfg := ui.InitApp("Honkai Star Rail Real-Time Notes", "?/?", icon.HsrNotFullData, ".\\stamina.log", ".\\config.json", m, popup, refreshData)
+	cfg := ui.InitApp("Honkai Star Rail Real-Time Notes", "?/?", icon.HsrNotFullData, ".\\stamina.log", ".\\hsr_cookie.json", m, "hsr", refreshData)
 	watchEvents(cfg, m)
 }
 
@@ -110,5 +103,4 @@ func onExit() {
 func main() {
 	defer logging.CapturePanic()
 	systray.Run(onReady, onExit)
-	app.Main()
 }
