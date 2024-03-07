@@ -30,7 +30,6 @@ func CreateMenuItem(title string, icon []byte) *systray.MenuItem {
 func refreshLoop[T any](cfg *config.Config, menu *T, refresh func(*config.Config, *T)) {
 	for {
 		refresh(cfg, menu)
-		logging.Info("Refreshed")
 		if cfg == nil {
 			time.Sleep(time.Duration(60) * time.Second)
 		} else {
