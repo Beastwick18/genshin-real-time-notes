@@ -26,18 +26,11 @@ Add your real-time notes to your system tray!
     <img width=300 src="./assets/login.png" />
 </p>
 
-2. Wait for the Battle Chronicle page to load, and copy your UID.
-3. Paste your UID into the input box at the bottom.
-
-<p align="center">
-    <img width=300 src="./assets/uid.png" />
-</p>
-
-4. *(optional)* Change the refresh interval to match how often you would like your data to refresh.
-5. Click "Done"
+2. *(optional)* Change the refresh interval to match how often you would like your data to refresh (in seconds).
+3. Click "Done"
 
 # 🏃 Run on startup
-- Create a shortcut to either exe.
+- Create a shortcut to either executable.
 - Press `Win + R` and type in `shell:startup` and hit Enter.
 - Copy the shortcut to this location.
 
