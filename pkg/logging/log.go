@@ -24,7 +24,7 @@ func Warn(fmt string, v ...any) {
 }
 
 func SetFile(file string) {
-	log.SetFlags(log.LstdFlags | log.Llongfile)
+	log.SetFlags(log.LstdFlags)
 	var err error
 	f, err = os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {

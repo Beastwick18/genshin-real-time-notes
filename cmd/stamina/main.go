@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"resin/cmd"
 	"resin/pkg/config"
 	"resin/pkg/hoyo"
 	"resin/pkg/hoyo/hsr"
@@ -12,6 +12,8 @@ import (
 
 	"github.com/energye/systray"
 )
+
+var configFile string = ".\\hsr_cookie.json"
 
 type Menu struct {
 	Stamina    *systray.MenuItem
@@ -68,15 +70,19 @@ func refreshData(cfg *config.Config, m *Menu) {
 	m.EchoOfWar.SetTitle(fmt.Sprintf("Echo of War: %d/%d", hr.Data.WeeklyCocoonCnt, hr.Data.WeeklyCocoonLimit))
 }
 
+func checkIn(cfg *config.Config) {
+	json, err := hoyo.GetDailyData[hsr.HsrDailyResponse](hsr.DailyURL, cfg.Ltoken, cfg.Ltuid, hsr.ActID)
+	if err != nil {
+		logging.Fail("Failed getting check in repsonse\n%s", err)
+		return
+	}
+	logging.Info("%d: %s", json.Retcode, json.Message)
+}
+
 func watchEvents(cfg *config.Config, m *Menu) {
 	m.CheckIn.Click(func() {
 		logging.Info("Clicked check in")
-		json, err := hoyo.GetDailyData[hsr.HsrDailyResponse](hsr.DailyURL, cfg.Ltoken, cfg.Ltuid, hsr.ActID)
-		if err != nil {
-			logging.Fail("Failed getting check in repsonse\n%s", err)
-			return
-		}
-		logging.Info("%d: %s", json.Retcode, json.Message)
+		checkIn(cfg)
 	})
 }
 
@@ -90,17 +96,12 @@ func onReady() {
 	m.EchoOfWar = ui.CreateMenuItem("Echo of War: ?/?", icon.EchoOfWarData)
 	m.CheckIn = ui.CreateMenuItem("Check In", icon.HsrCheckIn)
 
-	cfg := ui.InitApp("Honkai Star Rail Real-Time Notes", "?/?", icon.HsrNotFullData, ".\\stamina.log", ".\\hsr_cookie.json", m, "hsr", refreshData)
+	cfg := ui.InitApp("Honkai Star Rail Real-Time Notes", "?/?", icon.HsrNotFullData, ".\\stamina.log", configFile, m, "hsr", refreshData)
 	watchEvents(cfg, m)
 }
 
-func onExit() {
-	logging.Info("Exiting the application")
-	logging.Close()
-	os.Exit(0)
-}
-
 func main() {
+	cmd.ReadArgs(configFile, ".\\daily_hsr.log", checkIn)
 	defer logging.CapturePanic()
-	systray.Run(onReady, onExit)
+	systray.Run(onReady, cmd.OnExit)
 }

@@ -7,23 +7,14 @@ import (
 	"resin/pkg/logging"
 )
 
-type Config struct {
-	RefreshInterval int `json:"refresh_interval"`
-	// GenshinUID      string `json:"genshin_uid"`
-	// HsrUID          string `json:"hsr_uid"`
-	UID    string `json:"uid"`
-	Ltoken string `json:"ltoken_v2"`
-	Ltuid  string `json:"ltuid_v2"`
-}
+var VERSION string = "v0.0.4"
 
-// var DefaultConfig Config = Config{
-// 	RefreshInterval: 60,
-// 	// GenshinUID:      "genshin uid",
-// 	// HsrUID:          "hsr uid",
-// 	UID: "uid"
-// 	Ltoken:          "token",
-// 	Ltuid:           "mihoyo uid",
-// }
+type Config struct {
+	RefreshInterval int    `json:"refresh_interval"`
+	UID             string `json:"uid"`
+	Ltoken          string `json:"ltoken_v2"`
+	Ltuid           string `json:"ltuid_v2"`
+}
 
 func LoadJSON[T any](reader io.Reader) (*T, error) {
 	var cfg T

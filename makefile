@@ -1,15 +1,21 @@
-.PHONY: hsr_icon genshin_icon icon resin stamina all clean
+VERSION := v0.0.5
+
+.PHONY: hsr_icon genshin_icon icon resin stamina all clean zip
 
 GCC := /usr/bin/x86_64-w64-mingw32-gcc
 ENV := CGO_ENABLED=1 CC=${GCC} GOOS=windows GOARCH=amd64
+LDFLAGS := -ldflags "-H=windowsgui"
 
 all: resin stamina
 
 resin:
-	${ENV} go build -ldflags "-H=windowsgui" -o resin.exe cmd/resin/main.go
+	${ENV} go build $(LDFLAGS) -o resin.exe cmd/resin/main.go
 
 stamina:
-	${ENV} go build -ldflags "-H=windowsgui" -o stamina.exe cmd/stamina/main.go
+	${ENV} go build $(LDFLAGS) -o stamina.exe cmd/stamina/main.go
+
+zip: resin stamina
+	zip "real-time-notes-$(VERSION)-x86_64.zip" resin.exe stamina.exe
 
 clean:
 	rm -rf resin*.exe

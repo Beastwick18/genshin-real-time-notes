@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"resin/cmd"
 	"resin/pkg/config"
 	"resin/pkg/hoyo"
 	"resin/pkg/hoyo/genshin"
@@ -13,6 +13,8 @@ import (
 
 	"github.com/energye/systray"
 )
+
+var configFile string = ".\\genshin_cookie.json"
 
 type Menu struct {
 	Resin      *systray.MenuItem
@@ -76,18 +78,21 @@ func refreshData(cfg *config.Config, m *Menu) {
 	m.Expedition.SetTitle(fmt.Sprintf("Expeditions: %d/%d", count, gr.Data.MaxExpeditionNum))
 	m.Realm.SetTitle(fmt.Sprintf("Realm: %d/%d", gr.Data.CurrentHomeCoin, gr.Data.MaxHomeCoin))
 	m.Domain.SetTitle(fmt.Sprintf("Weekly Bosses: %d/%d", gr.Data.RemainResinDiscountNum, gr.Data.ResinDiscountNumLimit))
+}
 
+func checkIn(cfg *config.Config) {
+	json, err := hoyo.GetDailyData[genshin.GenshinDailyResponse](genshin.DailyURL, cfg.Ltoken, cfg.Ltuid, genshin.ActID)
+	if err != nil {
+		logging.Fail("Failed getting check in repsonse\n%s", err)
+		return
+	}
+	logging.Info("%d: %s", json.Retcode, json.Message)
 }
 
 func watchEvents(cfg *config.Config, m *Menu) {
 	m.CheckIn.Click(func() {
 		logging.Info("Clicked check in")
-		json, err := hoyo.GetDailyData[genshin.GenshinDailyResponse](genshin.DailyURL, cfg.Ltoken, cfg.Ltuid, genshin.ActID)
-		if err != nil {
-			logging.Fail("Failed getting check in repsonse\n%s", err)
-			return
-		}
-		logging.Info("%d: %s", json.Retcode, json.Message)
+		checkIn(cfg)
 	})
 }
 
@@ -101,21 +106,12 @@ func onReady() {
 	m.Domain = ui.CreateMenuItem("Weekly Bosses: ?/?", icon.WeeklyBossData)
 	m.CheckIn = ui.CreateMenuItem("Check In", icon.GenshinCheckIn)
 
-	cfg := ui.InitApp("Genshin Real-Time Notes", "?/?", icon.NotFullData, ".\\resin.log", ".\\genshin_cookie.json", m, "genshin", refreshData)
+	cfg := ui.InitApp("Genshin Real-Time Notes", "?/?", icon.NotFullData, ".\\resin.log", configFile, m, "genshin", refreshData)
 	watchEvents(cfg, m)
 }
 
-func onExit() {
-	logging.Info("Exiting the application")
-	logging.Close()
-	os.Exit(0)
-}
-
 func main() {
-	defer func() {
-		if err := recover(); err != nil {
-			logging.Panic("%v", err)
-		}
-	}()
-	systray.Run(onReady, onExit)
+	cmd.ReadArgs(configFile, ".\\daily_genshin.log", checkIn)
+	defer logging.CapturePanic()
+	systray.Run(onReady, cmd.OnExit)
 }

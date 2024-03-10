@@ -1,0 +1,35 @@
+package cmd
+
+import (
+	"fmt"
+	"os"
+	"resin/pkg/config"
+	"resin/pkg/logging"
+	"strings"
+)
+
+func OnExit() {
+	logging.Info("Exiting the application")
+	logging.Close()
+	os.Exit(0)
+}
+
+func ReadArgs(configFile string, dailyFile string, checkIn func(*config.Config)) {
+	args := os.Args[1:]
+	for _, arg := range args {
+		arg = strings.ToLower(arg)
+		if arg == "--check-in" {
+			logging.SetFile(dailyFile)
+			cfg, err := config.LoadConfig(configFile)
+			if err != nil {
+				logging.Fail("Failed to load config")
+				os.Exit(1)
+			}
+			checkIn(cfg)
+			os.Exit(0)
+		} else if arg == "-v" || arg == "--version" {
+			fmt.Println(config.VERSION)
+			os.Exit(0)
+		}
+	}
+}
