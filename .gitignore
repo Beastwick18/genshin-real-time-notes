@@ -4,5 +4,6 @@
 /curl.sh
 /stamina
 *.log
-/login/*.exe.WebView2/
+/login
 *.zip
+*.sh

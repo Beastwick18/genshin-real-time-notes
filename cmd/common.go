@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"resin/embedded"
 	"resin/pkg/config"
 	"resin/pkg/logging"
 	"strings"
@@ -16,6 +17,7 @@ func OnExit() {
 
 func ReadArgs(configFile string, dailyFile string, checkIn func(*config.Config)) {
 	args := os.Args[1:]
+	no_extract := false
 	for _, arg := range args {
 		arg = strings.ToLower(arg)
 		if arg == "--check-in" {
@@ -30,6 +32,11 @@ func ReadArgs(configFile string, dailyFile string, checkIn func(*config.Config))
 		} else if arg == "-v" || arg == "--version" {
 			fmt.Println(config.VERSION)
 			os.Exit(0)
+		} else if arg == "--no-extract" {
+			no_extract = true
 		}
+	}
+	if !no_extract {
+		embedded.ExtractEmbeddedFiles()
 	}
 }

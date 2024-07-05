@@ -7,7 +7,7 @@ import (
 	"resin/pkg/logging"
 )
 
-var VERSION string = "v0.0.4"
+var VERSION string = "v0.0.5"
 
 type Config struct {
 	RefreshInterval int    `json:"refresh_interval"`

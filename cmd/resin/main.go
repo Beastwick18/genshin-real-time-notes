@@ -104,7 +104,7 @@ func onReady() {
 	m.Expedition = ui.CreateMenuItem("Expeditions: ?/?", icon.ExpeditionData)
 	m.Realm = ui.CreateMenuItem("Realm: ?/?", icon.RealmData)
 	m.Domain = ui.CreateMenuItem("Weekly Bosses: ?/?", icon.WeeklyBossData)
-	m.CheckIn = ui.CreateMenuItem("Check In", icon.GenshinCheckIn)
+	m.CheckIn = ui.CreateMenuItem("Check In", icon.GenshinCheckInData)
 
 	cfg := ui.InitApp("Genshin Real-Time Notes", "?/?", icon.NotFullData, ".\\resin.log", configFile, m, "genshin", refreshData)
 	watchEvents(cfg, m)

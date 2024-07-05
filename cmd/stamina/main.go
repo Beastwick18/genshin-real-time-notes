@@ -94,7 +94,7 @@ func onReady() {
 	m.Expedition = ui.CreateMenuItem("Expeditions: ?/?", icon.HsrExpeditionData)
 	m.Reserve = ui.CreateMenuItem("Expeditions: ?/?", icon.HsrFullData)
 	m.EchoOfWar = ui.CreateMenuItem("Echo of War: ?/?", icon.EchoOfWarData)
-	m.CheckIn = ui.CreateMenuItem("Check In", icon.HsrCheckIn)
+	m.CheckIn = ui.CreateMenuItem("Check In", icon.HsrCheckInData)
 
 	cfg := ui.InitApp("Honkai Star Rail Real-Time Notes", "?/?", icon.HsrNotFullData, ".\\stamina.log", configFile, m, "hsr", refreshData)
 	watchEvents(cfg, m)

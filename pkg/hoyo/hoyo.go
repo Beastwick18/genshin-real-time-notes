@@ -68,11 +68,7 @@ func MakeRequest(baseURL string, server string, genshinUID string, ltoken string
 
 	client := &http.Client{}
 	r.Header.Add("DS", GenerateDS())
-	response, err := client.Do(r)
-	if err != nil {
-		return nil, err
-	}
-	return response, nil
+	return client.Do(r)
 }
 
 func GetDailyData[T any](url string, ltoken string, ltuid string, actID string) (*T, error) {
@@ -80,11 +76,7 @@ func GetDailyData[T any](url string, ltoken string, ltuid string, actID string) 
 	if err != nil {
 		return nil, err
 	}
-	json, err := config.LoadJSON[T](response.Body)
-	if err != nil {
-		return nil, err
-	}
-	return json, nil
+	return config.LoadJSON[T](response.Body)
 }
 
 func GetData[T any](baseURL string, server string, uid string, ltoken string, ltuid string) (*T, error) {
@@ -94,6 +86,7 @@ func GetData[T any](baseURL string, server string, uid string, ltoken string, lt
 	}
 
 	var reader io.ReadCloser
+
 	switch response.Header.Get("Content-Encoding") {
 	case "gzip":
 		reader, err = gzip.NewReader(response.Body)
@@ -103,13 +96,10 @@ func GetData[T any](baseURL string, server string, uid string, ltoken string, lt
 	default:
 		reader = response.Body
 	}
+
 	defer reader.Close()
 
-	json, err := config.LoadJSON[T](reader)
-	if err != nil {
-		return nil, err
-	}
-	return json, nil
+	return config.LoadJSON[T](reader)
 }
 
 func GenerateDS() string {
