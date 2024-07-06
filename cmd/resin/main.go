@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"resin/cmd"
+	"resin/embedded"
 	"resin/pkg/config"
 	"resin/pkg/hoyo"
 	"resin/pkg/hoyo/genshin"
-	"resin/pkg/icon"
 	"resin/pkg/logging"
 	"resin/pkg/ui"
 	"strconv"
@@ -14,7 +14,20 @@ import (
 	"github.com/energye/systray"
 )
 
+var logFile string = ".\\resin.log"
 var configFile string = ".\\genshin_cookie.json"
+
+type GenshinAssets struct {
+	ResinFull    []byte `asset:"genshin/resin_full.ico"`
+	ResinNotFull []byte `asset:"genshin/resin_not_full.ico"`
+	Commission   []byte `asset:"genshin/commission.ico"`
+	Expedition   []byte `asset:"genshin/expedition.ico"`
+	Realm        []byte `asset:"genshin/realm.ico"`
+	WeeklyBoss   []byte `asset:"genshin/weekly_boss.ico"`
+	CheckIn      []byte `asset:"genshin/checkin.ico"`
+}
+
+var assets GenshinAssets
 
 type Menu struct {
 	Resin      *systray.MenuItem
@@ -39,7 +52,7 @@ func refreshData(cfg *config.Config, m *Menu) {
 	if gr.Retcode != 0 {
 		logging.Fail("Server responded with (%d): %s\nCheck your UID, ltoken, and ltuid", gr.Retcode, gr.Message)
 		systray.SetTooltip("Bad response from server!")
-		systray.SetIcon(icon.FullData)
+		systray.SetIcon(assets.ResinFull)
 		return
 	}
 
@@ -60,9 +73,9 @@ func refreshData(cfg *config.Config, m *Menu) {
 	}
 
 	if current == max {
-		systray.SetIcon(icon.FullData)
+		systray.SetIcon(assets.ResinFull)
 	} else {
-		systray.SetIcon(icon.NotFullData)
+		systray.SetIcon(assets.ResinNotFull)
 	}
 	title := fmt.Sprintf("%d/%d%s", current, max, recovery)
 	systray.SetTooltip(title)
@@ -98,16 +111,24 @@ func watchEvents(cfg *config.Config, m *Menu) {
 
 func onReady() {
 	defer logging.CapturePanic()
-	m := &Menu{}
-	m.Resin = ui.CreateMenuItem("Resin: ?/?", icon.NotFullData)
-	m.Commission = ui.CreateMenuItem("Commissions: ?/?", icon.CommissionData)
-	m.Expedition = ui.CreateMenuItem("Expeditions: ?/?", icon.ExpeditionData)
-	m.Realm = ui.CreateMenuItem("Realm: ?/?", icon.RealmData)
-	m.Domain = ui.CreateMenuItem("Weekly Bosses: ?/?", icon.WeeklyBossData)
-	m.CheckIn = ui.CreateMenuItem("Check In", icon.GenshinCheckInData)
+	logging.SetFile(logFile)
 
-	cfg := ui.InitApp("Genshin Real-Time Notes", "?/?", icon.NotFullData, ".\\resin.log", configFile, m, "genshin", refreshData)
-	watchEvents(cfg, m)
+	err := embedded.ReadAssets(&assets)
+	if err != nil {
+		logging.Panic("Failed to read assets")
+		return
+	}
+
+	var m Menu
+	m.Resin = ui.CreateMenuItem("Resin: ?/?", assets.ResinNotFull)
+	m.Commission = ui.CreateMenuItem("Commissions: ?/?", assets.Commission)
+	m.Expedition = ui.CreateMenuItem("Expeditions: ?/?", assets.Expedition)
+	m.Realm = ui.CreateMenuItem("Realm: ?/?", assets.Realm)
+	m.Domain = ui.CreateMenuItem("Weekly Bosses: ?/?", assets.WeeklyBoss)
+	m.CheckIn = ui.CreateMenuItem("Check In", assets.CheckIn)
+
+	cfg := ui.InitApp("Genshin Real-Time Notes", "?/?", assets.ResinNotFull, logFile, configFile, &m, "genshin", refreshData)
+	watchEvents(cfg, &m)
 }
 
 func main() {

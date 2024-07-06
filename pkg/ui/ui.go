@@ -28,13 +28,14 @@ func CreateMenuItem(title string, icon []byte) *systray.MenuItem {
 }
 
 func refreshLoop[T any](cfg *config.Config, menu *T, refresh func(*config.Config, *T)) {
+	duration_secs := 60
+	if cfg != nil {
+		duration_secs = cfg.RefreshInterval
+	}
+	duration := time.Duration(duration_secs) * time.Second
 	for {
 		refresh(cfg, menu)
-		if cfg == nil {
-			time.Sleep(time.Duration(60) * time.Second)
-		} else {
-			time.Sleep(time.Duration(cfg.RefreshInterval) * time.Second)
-		}
+		time.Sleep(duration)
 	}
 }
 
@@ -93,7 +94,6 @@ func InitApp[T any](title string, tooltip string, icon []byte, logFile string, c
 	systray.SetOnClick(func(menu systray.IMenu) {
 		menu.ShowMenu()
 	})
-	logging.SetFile(logFile)
 	logging.Info("Application start")
 
 	systray.SetIcon(icon)

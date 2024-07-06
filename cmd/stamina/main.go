@@ -3,17 +3,29 @@ package main
 import (
 	"fmt"
 	"resin/cmd"
+	"resin/embedded"
 	"resin/pkg/config"
 	"resin/pkg/hoyo"
 	"resin/pkg/hoyo/hsr"
-	"resin/pkg/icon"
 	"resin/pkg/logging"
 	"resin/pkg/ui"
 
 	"github.com/energye/systray"
 )
 
+var logFile string = ".\\stamina.log"
 var configFile string = ".\\hsr_cookie.json"
+
+type HsrAssets struct {
+	StaminaFull    []byte `asset:"hsr/stamina_full.ico"`
+	StaminaNotFull []byte `asset:"hsr/stamina_not_full.ico"`
+	Training       []byte `asset:"hsr/training.ico"`
+	Expedition     []byte `asset:"hsr/expedition.ico"`
+	EchoOfWar      []byte `asset:"hsr/echo_of_war.ico"`
+	CheckIn        []byte `asset:"hsr/checkin.ico"`
+}
+
+var assets HsrAssets
 
 type Menu struct {
 	Stamina    *systray.MenuItem
@@ -35,7 +47,7 @@ func refreshData(cfg *config.Config, m *Menu) {
 	if hr.Retcode != 0 {
 		logging.Fail("Server responded with (%d): %s\nCheck your UID, ltoken, and ltuid", hr.Retcode, hr.Message)
 		systray.SetTooltip("Bad response from server!")
-		systray.SetIcon(icon.HsrFullData)
+		systray.SetIcon(assets.StaminaFull)
 		return
 	}
 
@@ -50,9 +62,9 @@ func refreshData(cfg *config.Config, m *Menu) {
 	}
 
 	if current == max {
-		systray.SetIcon(icon.HsrFullData)
+		systray.SetIcon(assets.StaminaFull)
 	} else {
-		systray.SetIcon(icon.HsrNotFullData)
+		systray.SetIcon(assets.StaminaNotFull)
 	}
 	title := fmt.Sprintf("%d/%d%s", current, max, recovery)
 	systray.SetTooltip(title)
@@ -88,15 +100,23 @@ func watchEvents(cfg *config.Config, m *Menu) {
 
 func onReady() {
 	defer logging.CapturePanic()
-	m := &Menu{}
-	m.Stamina = ui.CreateMenuItem("Stamina: ?/?", icon.HsrNotFullData)
-	m.Training = ui.CreateMenuItem("Training: ?/?", icon.TrainingData)
-	m.Expedition = ui.CreateMenuItem("Expeditions: ?/?", icon.HsrExpeditionData)
-	m.Reserve = ui.CreateMenuItem("Expeditions: ?/?", icon.HsrFullData)
-	m.EchoOfWar = ui.CreateMenuItem("Echo of War: ?/?", icon.EchoOfWarData)
-	m.CheckIn = ui.CreateMenuItem("Check In", icon.HsrCheckInData)
+	logging.SetFile(logFile)
 
-	cfg := ui.InitApp("Honkai Star Rail Real-Time Notes", "?/?", icon.HsrNotFullData, ".\\stamina.log", configFile, m, "hsr", refreshData)
+	err := embedded.ReadAssets(&assets)
+	if err != nil {
+		logging.Panic("Failed to read assets")
+		return
+	}
+
+	m := &Menu{}
+	m.Stamina = ui.CreateMenuItem("Stamina: ?/?", assets.StaminaNotFull)
+	m.Training = ui.CreateMenuItem("Training: ?/?", assets.Training)
+	m.Expedition = ui.CreateMenuItem("Expeditions: ?/?", assets.Expedition)
+	m.Reserve = ui.CreateMenuItem("Reserve: ?/?", assets.StaminaFull)
+	m.EchoOfWar = ui.CreateMenuItem("Echo of War: ?/?", assets.EchoOfWar)
+	m.CheckIn = ui.CreateMenuItem("Check In", assets.CheckIn)
+
+	cfg := ui.InitApp("Honkai Star Rail Real-Time Notes", "?/?", assets.StaminaNotFull, logFile, configFile, m, "hsr", refreshData)
 	watchEvents(cfg, m)
 }
 

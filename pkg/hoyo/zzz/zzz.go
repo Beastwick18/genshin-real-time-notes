@@ -2,7 +2,7 @@ package zzz
 
 const BaseURL = "https://sg-act-nap-api.hoyolab.com/event/game_record_zzz/api/zzz/note"
 
-const DailyURL = "https://sg-public-api.hoyolab.com/event/luna/os/sign"
+const DailyURL = "https://sg-act-nap-api.hoyolab.com/event/luna/zzz/os/sign"
 const ActID = "e202406031448091"
 
 // **Second** character in UID. First is always '1'

@@ -7,3 +7,4 @@
 /login
 *.zip
 *.sh
+/.direnv

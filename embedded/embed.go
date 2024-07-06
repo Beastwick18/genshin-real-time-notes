@@ -5,11 +5,33 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"resin/pkg/logging"
 )
 
+//go:embed assets/*
+var AssetFiles embed.FS
+
 //go:embed login/WebView2Loader.dll login/WebViewLogin-v0.0.5.exe
 var LoginFiles embed.FS
+
+func ReadAssets[T any](a *T) error {
+	val := reflect.ValueOf(a)
+	elem := val.Elem()
+	for i := 0; i < elem.NumField(); i++ {
+		file, ok := elem.Type().Field(i).Tag.Lookup("asset")
+		if !ok {
+			continue // no tag
+		}
+		bytes, err := AssetFiles.ReadFile(fmt.Sprintf("assets/%s", file))
+		if err != nil {
+			return err
+		}
+
+		elem.Field(i).SetBytes(bytes)
+	}
+	return nil
+}
 
 func ExtractEmbeddedFiles() {
 	read, err := LoginFiles.ReadDir("login")
@@ -17,7 +39,7 @@ func ExtractEmbeddedFiles() {
 		logging.Fail("Failed to read dir \".\" :(")
 		return
 	}
-	err = os.MkdirAll("login", 0750)
+	err = os.MkdirAll("login", 0755)
 	for i, e := range read {
 		path := fmt.Sprintf("login/%s", e.Name())
 		winPath := filepath.Join(".", path)

@@ -11,12 +11,12 @@ Add your real-time notes to your system tray!
 </p>
 
 # 🛠️ Installing (pre-built binaries)
-- Download the [latest .zip release](https://github.com/Beastwick18/genshin-real-time-notes/releases/latest) from the releases tab.
+- Download the [latest .exe release](https://github.com/Beastwick18/genshin-real-time-notes/releases/latest) from the releases tab for `stamina.exe`, `resin.exe`, or `charge.exe` for Genshin, Honkai: Star-Rail, or Zenless Zone Zero respectively.
 - Ensure you have [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2?form=MA13LH#download) installed.
   - Select "Evergreen Standalone Installer"
   - WebView2 comes pre-installed on Windows 11, so you may not have to install it.
 - Extract this to wherever you would like it to be installed.
-- Run either `resin.exe` for Genshin, or `stamina.exe` for Honkai: Star-Rail.
+- Run either `resin.exe` for Genshin, `stamina.exe` for Honkai: Star-Rail, or `charge.exe` for Zenless Zone Zero.
 - A login window should appear prompting you to login to your Hoyolab account.
 
 # 🍪 Logging in to Hoyolab
@@ -45,4 +45,4 @@ cd genshin-real-time-notes
 ```
 make
 ```
-- Which will generate `resin.exe` and `stamina.exe` for Genshin and Honkai: Star-Rail respectively.
+- Which will generate `resin.exe`, `stamina.exe`, and `charge.exe` for Genshin, Honkai: Star-Rail, and Zenless Zone Zero respectively.

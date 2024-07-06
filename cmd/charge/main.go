@@ -3,17 +3,30 @@ package main
 import (
 	"fmt"
 	"resin/cmd"
+	"resin/embedded"
 	"resin/pkg/config"
 	"resin/pkg/hoyo"
 	"resin/pkg/hoyo/zzz"
-	"resin/pkg/icon"
 	"resin/pkg/logging"
 	"resin/pkg/ui"
 
 	"github.com/energye/systray"
 )
 
+var logFile string = ".\\charge.log"
 var configFile string = ".\\zzz_cookie.json"
+
+type ZzzAssets struct {
+	ChargeFull     []byte `asset:"zzz/charge_full.ico"`
+	ChargeNotFull  []byte `asset:"zzz/charge_not_full.ico"`
+	Engagement     []byte `asset:"zzz/engagement.ico"`
+	EngagementDone []byte `asset:"zzz/engagement_done.ico"`
+	CheckIn        []byte `asset:"zzz/checkin.ico"`
+	Ticket         []byte `asset:"zzz/ticket.ico"`
+	Tape           []byte `asset:"zzz/tape.ico"`
+}
+
+var assets ZzzAssets
 
 type Menu struct {
 	Charge      *systray.MenuItem
@@ -51,7 +64,7 @@ func refreshData(cfg *config.Config, m *Menu) {
 	if zr.Retcode != 0 {
 		logging.Fail("Server responded with (%d): %s\nCheck your UID, ltoken, and ltuid", zr.Retcode, zr.Message)
 		systray.SetTooltip("Bad response from server!")
-		systray.SetIcon(icon.ZzzFullData)
+		systray.SetIcon(assets.ChargeFull)
 		return
 	}
 
@@ -65,9 +78,9 @@ func refreshData(cfg *config.Config, m *Menu) {
 		recovery = fmt.Sprintf(" [%dh %dm]", hours, minutes)
 	}
 
-	charge := icon.ZzzNotFullData
+	charge := assets.ChargeNotFull
 	if current == max {
-		charge = icon.ZzzFullData
+		charge = assets.ChargeFull
 	}
 	systray.SetIcon(charge)
 	m.Charge.SetIcon(charge)
@@ -77,10 +90,10 @@ func refreshData(cfg *config.Config, m *Menu) {
 	m.Engagement.SetTitle(fmt.Sprintf("Engagement: %d/%d", daily_current, daily_max))
 	if daily_current == daily_max {
 		m.Engagement.Disable()
-		m.Engagement.SetIcon(icon.ZzzEngagementDoneData)
+		m.Engagement.SetIcon(assets.EngagementDone)
 	} else {
 		m.Engagement.Enable()
-		m.Engagement.SetIcon(icon.ZzzEngagementData)
+		m.Engagement.SetIcon(assets.Engagement)
 	}
 
 	saleState, ok := SaleStates[zr.Data.VhsSale.SaleState]
@@ -122,16 +135,23 @@ func watchEvents(cfg *config.Config, m *Menu) {
 
 func onReady() {
 	defer logging.CapturePanic()
+	logging.SetFile(logFile)
 
-	m := &Menu{}
-	m.Charge = ui.CreateMenuItem("Charge: ?/?", icon.ZzzNotFullData)
-	m.Engagement = ui.CreateMenuItem("Engagement: ?/?", icon.ZzzEngagementData)
-	m.ScratchCard = ui.CreateMenuItem("Scratch Card: ???", icon.ZzzTicketData)
-	m.VideoStore = ui.CreateMenuItem("Video Store: ???", icon.ZzzTapeData)
-	m.CheckIn = ui.CreateMenuItem("Check In", icon.ZzzCheckInData)
+	err := embedded.ReadAssets(&assets)
+	if err != nil {
+		logging.Panic("Failed to read assets")
+		return
+	}
 
-	cfg := ui.InitApp("Zenless Zone Zero Real-Time Notes", "?/?", icon.ZzzNotFullData, ".\\charge.log", configFile, m, "zzz", refreshData)
-	watchEvents(cfg, m)
+	var m Menu
+	m.Charge = ui.CreateMenuItem("Charge: ?/?", assets.ChargeNotFull)
+	m.Engagement = ui.CreateMenuItem("Engagement: ?/?", assets.Engagement)
+	m.ScratchCard = ui.CreateMenuItem("Scratch Card: ???", assets.Ticket)
+	m.VideoStore = ui.CreateMenuItem("Video Store: ???", assets.Tape)
+	m.CheckIn = ui.CreateMenuItem("Check In", assets.CheckIn)
+
+	cfg := ui.InitApp("Zenless Zone Zero Real-Time Notes", "?/?", assets.ChargeNotFull, logFile, configFile, &m, "zzz", refreshData)
+	watchEvents(cfg, &m)
 }
 
 func main() {
