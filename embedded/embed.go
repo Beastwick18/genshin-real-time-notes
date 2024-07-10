@@ -36,7 +36,7 @@ func ReadAssets[T any](a *T) error {
 func ExtractEmbeddedFiles() {
 	read, err := LoginFiles.ReadDir("login")
 	if err != nil {
-		logging.Fail("Failed to read dir \".\" :(")
+		logging.Fail("Failed to read asset dir \"login\":\n%v", err)
 		return
 	}
 	err = os.MkdirAll("login", 0755)
@@ -50,20 +50,20 @@ func ExtractEmbeddedFiles() {
 
 		file, err := LoginFiles.ReadFile(path)
 		if err != nil {
-			logging.Fail("failed to read file %d", i)
+			logging.Fail("failed to read file %d:\n%v", i, err)
 			continue
 		}
 
 		newFile, err := os.Create(winPath)
 		defer newFile.Close()
 		if err != nil {
-			logging.Fail("failed to create file %d", i)
+			logging.Fail("failed to create file %d:\n%v", i, err)
 			continue
 		}
 
 		n, err := newFile.Write(file)
 		if err != nil {
-			logging.Fail("failed to write file %d", i)
+			logging.Fail("failed to write file %d:\n%v", i, err)
 			continue
 		}
 

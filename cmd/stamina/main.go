@@ -10,7 +10,7 @@ import (
 	"resin/pkg/logging"
 	"resin/pkg/ui"
 
-	"github.com/energye/systray"
+	"github.com/Beastwick18/systray"
 )
 
 var logFile string = ".\\stamina.log"

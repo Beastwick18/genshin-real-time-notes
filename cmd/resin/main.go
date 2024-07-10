@@ -11,7 +11,7 @@ import (
 	"resin/pkg/ui"
 	"strconv"
 
-	"github.com/energye/systray"
+	"github.com/Beastwick18/systray"
 )
 
 var logFile string = ".\\resin.log"

@@ -9,7 +9,7 @@ import (
 	"resin/pkg/logging"
 	"time"
 
-	"github.com/energye/systray"
+	"github.com/Beastwick18/systray"
 	"github.com/skratchdot/open-golang/open"
 )
 
@@ -96,6 +96,7 @@ func InitApp[T any](title string, tooltip string, icon []byte, logFile string, c
 	})
 	logging.Info("Application start")
 
+	systray.AllowDarkTheme()
 	systray.SetIcon(icon)
 	systray.SetTitle(title)
 	systray.SetTooltip(tooltip)
