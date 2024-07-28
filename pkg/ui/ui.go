@@ -7,10 +7,26 @@ import (
 	"path"
 	"resin/pkg/config"
 	"resin/pkg/logging"
+	"resin/pkg/util"
 	"time"
 
-	"github.com/Beastwick18/systray"
+	"github.com/energye/systray"
 	"github.com/skratchdot/open-golang/open"
+	"golang.org/x/sys/windows"
+)
+
+const (
+	defaultTheme    = 0
+	allowDarkTheme  = 1
+	forceDarkTheme  = 2
+	forceLightTheme = 3
+	maxTheme        = 4
+)
+
+var (
+	ux                   = windows.NewLazySystemDLL("uxtheme.dll")
+	pSetPreferredAppMode = util.NewProcByOrdinal(ux, 135)
+	pFlushMenuThemes     = util.NewProcByOrdinal(ux, 136)
 )
 
 type CommonMenu struct {
@@ -19,6 +35,7 @@ type CommonMenu struct {
 	Advanced *systray.MenuItem
 	Logs     *systray.MenuItem
 	Login    *systray.MenuItem
+	DarkMode *systray.MenuItem
 }
 
 func CreateMenuItem(title string, icon []byte) *systray.MenuItem {
@@ -59,6 +76,15 @@ func watchEvents[T any](cm *CommonMenu, cfg *config.Config, menu *T, logFile str
 			return
 		}
 	})
+	cm.DarkMode.Click(func() {
+		if cm.DarkMode.Checked() {
+			cm.DarkMode.Uncheck()
+			SetTheme(forceLightTheme)
+		} else {
+			cm.DarkMode.Check()
+			SetTheme(forceDarkTheme)
+		}
+	})
 }
 
 func login[T any](app string, configFile string, cfg *config.Config, menu *T, refresh func(*config.Config, *T)) (*config.Config, error) {
@@ -90,13 +116,17 @@ func login[T any](app string, configFile string, cfg *config.Config, menu *T, re
 	return cfg, nil
 }
 
+func SetTheme(code uintptr) {
+	pSetPreferredAppMode.Call(code)
+	pFlushMenuThemes.Call()
+}
+
 func InitApp[T any](title string, tooltip string, icon []byte, logFile string, configFile string, menu *T, app string, refresh func(*config.Config, *T)) *config.Config {
 	systray.SetOnClick(func(menu systray.IMenu) {
 		menu.ShowMenu()
 	})
 	logging.Info("Application start")
 
-	systray.AllowDarkTheme()
 	systray.SetIcon(icon)
 	systray.SetTitle(title)
 	systray.SetTooltip(tooltip)
@@ -117,8 +147,16 @@ func InitApp[T any](title string, tooltip string, icon []byte, logFile string, c
 		cfg, err = login(app, configFile, cfg, menu, refresh)
 		if err != nil {
 			logging.Fail("Failed to login")
+			os.Exit(1)
+			return nil
 		}
 	}
+
+	if cfg.DarkMode {
+		SetTheme(forceDarkTheme)
+	}
+	cm.DarkMode = cm.Advanced.AddSubMenuItemCheckbox("Dark Mode", "Dark Mode", cfg.DarkMode)
+
 	go refreshLoop(cfg, menu, refresh)
 
 	watchEvents(cm, cfg, menu, logFile, configFile, app, refresh)

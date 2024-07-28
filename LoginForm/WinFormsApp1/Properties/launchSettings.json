@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "WebViewLogin": {
+      "commandName": "Project",
+      "commandLineArgs": "zzz"
+    }
+  }
+}

@@ -15,7 +15,7 @@ var AssetFiles embed.FS
 //go:embed login/WebView2Loader.dll login/WebViewLogin-v0.0.5.exe
 var LoginFiles embed.FS
 
-func ReadAssets[T any](a *T) error {
+func ReadAssets[T any](a *T) {
 	val := reflect.ValueOf(a)
 	elem := val.Elem()
 	for i := 0; i < elem.NumField(); i++ {
@@ -24,13 +24,16 @@ func ReadAssets[T any](a *T) error {
 			continue // no tag
 		}
 		bytes, err := AssetFiles.ReadFile(fmt.Sprintf("assets/%s", file))
+		// Panic on failure to read any asset
 		if err != nil {
-			return err
+			logging.Panic("Failed to read assets:\n%v", err)
+			os.Exit(1)
+			return
 		}
 
 		elem.Field(i).SetBytes(bytes)
 	}
-	return nil
+	return
 }
 
 func ExtractEmbeddedFiles() {

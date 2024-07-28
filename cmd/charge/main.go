@@ -10,7 +10,7 @@ import (
 	"resin/pkg/logging"
 	"resin/pkg/ui"
 
-	"github.com/Beastwick18/systray"
+	"github.com/energye/systray"
 )
 
 var logFile string = ".\\charge.log"
@@ -137,11 +137,7 @@ func onReady() {
 	defer logging.CapturePanic()
 	logging.SetFile(logFile)
 
-	err := embedded.ReadAssets(&assets)
-	if err != nil {
-		logging.Panic("Failed to read assets")
-		return
-	}
+	embedded.ReadAssets(&assets)
 
 	var m Menu
 	m.Charge = ui.CreateMenuItem("Charge: ?/?", assets.ChargeNotFull)

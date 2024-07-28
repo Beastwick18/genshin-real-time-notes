@@ -14,6 +14,7 @@ type Config struct {
 	UID             string `json:"uid"`
 	Ltoken          string `json:"ltoken_v2"`
 	Ltuid           string `json:"ltuid_v2"`
+	DarkMode        bool   `json:"dark_mode"`
 }
 
 func LoadJSON[T any](reader io.Reader) (*T, error) {

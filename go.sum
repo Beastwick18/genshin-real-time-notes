@@ -1,5 +1,5 @@
-github.com/Beastwick18/systray v0.0.2 h1:nuRAbDnFbG3JBuk0YVpiuF951/ndkosMLsUz/XH5U1E=
-github.com/Beastwick18/systray v0.0.2/go.mod h1:3NaXy8QdG5Bv2FE6qOcc5U5CV+a8D6Ydscm9Ecj/wOM=
+github.com/energye/systray v1.0.2 h1:63R4prQkANtpM2CIA4UrDCuwZFt+FiygG77JYCsNmXc=
+github.com/energye/systray v1.0.2/go.mod h1:sp7Q/q/I4/w5ebvpSuJVep71s9Bg7L9ZVp69gBASehM=
 github.com/godbus/dbus/v5 v5.0.4/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
 github.com/godbus/dbus/v5 v5.1.0 h1:4KLkAxT3aOY8Li4FRJe/KvhoNFFxo0m6fNuFUO8QJUk=
 github.com/godbus/dbus/v5 v5.1.0/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=

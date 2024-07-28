@@ -15,9 +15,10 @@ Add your real-time notes to your system tray!
 - Ensure you have [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2?form=MA13LH#download) installed.
   - Select "Evergreen Standalone Installer"
   - WebView2 comes pre-installed on Windows 11, so you may not have to install it.
-- Extract this to wherever you would like it to be installed.
 - Run either `resin.exe` for Genshin, `stamina.exe` for Honkai: Star-Rail, or `charge.exe` for Zenless Zone Zero.
+- A pre-packaged login executable will be extracted into the local directory.
 - A login window should appear prompting you to login to your Hoyolab account.
+- Once done, your Hoyolab cookies will be saved to a file ending in `_cookies.json`.
 
 # 🍪 Logging in to Hoyolab
 1. Wait for the web page to load, then login with your email and password.
