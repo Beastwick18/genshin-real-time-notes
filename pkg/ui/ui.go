@@ -5,6 +5,8 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
+	"resin/pkg/autostart"
 	"resin/pkg/config"
 	"resin/pkg/logging"
 	"resin/pkg/util"
@@ -30,12 +32,13 @@ var (
 )
 
 type CommonMenu struct {
-	Refresh  *systray.MenuItem
-	Quit     *systray.MenuItem
-	Advanced *systray.MenuItem
-	Logs     *systray.MenuItem
-	Login    *systray.MenuItem
-	DarkMode *systray.MenuItem
+	Refresh   *systray.MenuItem
+	Quit      *systray.MenuItem
+	Advanced  *systray.MenuItem
+	Logs      *systray.MenuItem
+	Login     *systray.MenuItem
+	DarkMode  *systray.MenuItem
+	Autostart *systray.MenuItem
 }
 
 func CreateMenuItem(title string, icon []byte) *systray.MenuItem {
@@ -56,7 +59,7 @@ func refreshLoop[T any](cfg *config.Config, menu *T, refresh func(*config.Config
 	}
 }
 
-func watchEvents[T any](cm *CommonMenu, cfg *config.Config, menu *T, logFile string, configFile string, app string, refresh func(*config.Config, *T)) {
+func watchEvents[T any](cm *CommonMenu, cfg *config.Config, menu *T, auto *autostart.App, logFile string, configFile string, app string, refresh func(*config.Config, *T)) {
 	cm.Quit.Click(func() {
 		systray.Quit()
 	})
@@ -83,6 +86,15 @@ func watchEvents[T any](cm *CommonMenu, cfg *config.Config, menu *T, logFile str
 		} else {
 			cm.DarkMode.Check()
 			SetTheme(forceDarkTheme)
+		}
+	})
+	cm.Autostart.Click(func() {
+		if cm.Autostart.Checked() {
+			cm.Autostart.Uncheck()
+			auto.Disable()
+		} else {
+			cm.Autostart.Check()
+			auto.Enable()
 		}
 	})
 }
@@ -157,8 +169,22 @@ func InitApp[T any](title string, tooltip string, icon []byte, logFile string, c
 	}
 	cm.DarkMode = cm.Advanced.AddSubMenuItemCheckbox("Dark Mode", "Dark Mode", cfg.DarkMode)
 
+	exec, err := os.Executable()
+	var auto *autostart.App
+	enabled := false
+	if err == nil {
+		auto = &autostart.App{
+			Name:             app,
+			FileName:         fmt.Sprintf("%s.lnk", app),
+			Exec:             []string{exec},
+			WorkingDirectory: filepath.Dir(exec),
+		}
+		enabled = auto.IsEnabled()
+	}
+	cm.Autostart = cm.Advanced.AddSubMenuItemCheckbox("Autostart", "Autostart", enabled)
+
 	go refreshLoop(cfg, menu, refresh)
 
-	watchEvents(cm, cfg, menu, logFile, configFile, app, refresh)
+	watchEvents(cm, cfg, menu, auto, logFile, configFile, app, refresh)
 	return cfg
 }
