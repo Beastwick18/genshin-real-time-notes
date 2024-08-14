@@ -1,0 +1,22 @@
+#!/bin/sh
+
+if [[ ! -v VERSION ]]; then
+	echo "VERSION not set"
+	exit 1
+fi
+
+
+publish_rel=$(xq --raw-output '.Project.PropertyGroup.PublishDir' ./LoginForm/WinFormsApp1/Properties/PublishProfiles/FolderProfile.pubxml | sed 's#\\#/#g')
+publish="./LoginForm/WinFormsApp1/${publish_rel}"
+
+echo "build login VERSION=${VERSION}"
+
+pushd LoginForm/WinFormsApp1
+dotnet.exe publish -p:PublishProfile=FolderProfile
+popd
+
+echo "Copy from \"${publish}/WebViewLogin.exe\" to \"./embedded/login/WebViewLogin-${VERSION}.exe\""
+mkdir -p "embedded/login"
+cp "${publish}/WebViewLogin.exe" "./embedded/login/WebViewLogin-${VERSION}.exe"
+cp "${publish}/WebView2Loader.dll" "./embedded/login/WebView2Loader.dll"
+

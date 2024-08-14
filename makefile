@@ -1,6 +1,6 @@
 VERSION := v0.0.5
 
-.PHONY: resin stamina charge all clean zip
+.PHONY: resin stamina charge all clean login
 
 ENV := CGO_ENABLED=1 GOOS=windows GOARCH=amd64
 LDFLAGS := -ldflags "-H=windowsgui"
@@ -16,8 +16,8 @@ stamina:
 charge:
 	${ENV} go build $(LDFLAGS) -o charge.exe cmd/charge/main.go
 
-zip: resin stamina
-	zip "real-time-notes-$(VERSION)-x86_64.zip" resin.exe stamina.exe
+login:
+	VERSION=$(VERSION) ./buildLogin
 
 clean:
 	rm -rf resin*.exe

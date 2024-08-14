@@ -8,3 +8,4 @@
 *.zip
 *.sh
 /.direnv
+/embedded/login
