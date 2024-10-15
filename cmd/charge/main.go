@@ -19,6 +19,7 @@ var configFile string = ".\\zzz_cookie.json"
 type ZzzAssets struct {
 	ChargeFull     []byte `asset:"zzz/charge_full.ico"`
 	ChargeNotFull  []byte `asset:"zzz/charge_not_full.ico"`
+	ChargeError    []byte `asset:"zzz/charge_error.ico"`
 	Engagement     []byte `asset:"zzz/engagement.ico"`
 	EngagementDone []byte `asset:"zzz/engagement_done.ico"`
 	CheckIn        []byte `asset:"zzz/checkin.ico"`
@@ -53,18 +54,20 @@ func refreshData(cfg *config.Config, m *Menu) {
 	if !ok {
 		logging.Fail(`Failed getting UID region (UID="%s")`, cfg.UID)
 		systray.SetTooltip("Failed getting UID region!")
+		systray.SetIcon(assets.ChargeError)
 		return
 	}
 	zr, err := hoyo.GetData[zzz.ZzzResponse](zzz.BaseURL, server, cfg.UID, cfg.Ltoken, cfg.Ltuid)
 	if err != nil {
 		logging.Fail("Failed getting data from %s: Check your UID, ltoken, and ltuid\n%s", zzz.BaseURL, err)
 		systray.SetTooltip("Failed getting data!")
+		systray.SetIcon(assets.ChargeError)
 		return
 	}
 	if zr.Retcode != 0 {
 		logging.Fail("Server responded with (%d): %s\nCheck your UID, ltoken, and ltuid", zr.Retcode, zr.Message)
 		systray.SetTooltip("Bad response from server!")
-		systray.SetIcon(assets.ChargeFull)
+		systray.SetIcon(assets.ChargeError)
 		return
 	}
 

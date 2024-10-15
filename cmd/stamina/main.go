@@ -19,6 +19,7 @@ var configFile string = ".\\hsr_cookie.json"
 type HsrAssets struct {
 	StaminaFull    []byte `asset:"hsr/stamina_full.ico"`
 	StaminaNotFull []byte `asset:"hsr/stamina_not_full.ico"`
+	StaminaError   []byte `asset:"hsr/stamina_error.ico"`
 	Training       []byte `asset:"hsr/training.ico"`
 	Expedition     []byte `asset:"hsr/expedition.ico"`
 	EchoOfWar      []byte `asset:"hsr/echo_of_war.ico"`
@@ -42,12 +43,13 @@ func refreshData(cfg *config.Config, m *Menu) {
 	if err != nil {
 		logging.Fail("Failed getting data from %s: Check your UID, ltoken, and ltuid\n%s", hsr.BaseURL, err)
 		systray.SetTooltip("Failed getting data!")
+		systray.SetIcon(assets.StaminaError)
 		return
 	}
 	if hr.Retcode != 0 {
 		logging.Fail("Server responded with (%d): %s\nCheck your UID, ltoken, and ltuid", hr.Retcode, hr.Message)
 		systray.SetTooltip("Bad response from server!")
-		systray.SetIcon(assets.StaminaFull)
+		systray.SetIcon(assets.StaminaError)
 		return
 	}
 

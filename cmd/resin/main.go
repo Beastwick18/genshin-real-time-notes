@@ -20,6 +20,7 @@ var configFile string = ".\\genshin_cookie.json"
 type GenshinAssets struct {
 	ResinFull    []byte `asset:"genshin/resin_full.ico"`
 	ResinNotFull []byte `asset:"genshin/resin_not_full.ico"`
+	ResinError   []byte `asset:"genshin/resin_error.ico"`
 	Commission   []byte `asset:"genshin/commission.ico"`
 	Expedition   []byte `asset:"genshin/expedition.ico"`
 	Realm        []byte `asset:"genshin/realm.ico"`
@@ -47,12 +48,13 @@ func refreshData(cfg *config.Config, m *Menu) {
 	if err != nil {
 		logging.Fail("Failed getting data from %s: Check your UID, ltoken, and ltuid\n%s", genshin.BaseURL, err)
 		systray.SetTooltip("Failed getting data!")
+		systray.SetIcon(assets.ResinError)
 		return
 	}
 	if gr.Retcode != 0 {
 		logging.Fail("Server responded with (%d): %s\nCheck your UID, ltoken, and ltuid", gr.Retcode, gr.Message)
 		systray.SetTooltip("Bad response from server!")
-		systray.SetIcon(assets.ResinFull)
+		systray.SetIcon(assets.ResinError)
 		return
 	}
 
