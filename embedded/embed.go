@@ -12,7 +12,7 @@ import (
 //go:embed assets/*
 var AssetFiles embed.FS
 
-//go:embed login/WebView2Loader.dll login/WebViewLogin-v0.0.5.exe
+//go:embed login/WebView2Loader.dll login/WebViewLogin-v0.0.6.exe
 var LoginFiles embed.FS
 
 func ReadAssets[T any](a *T) {

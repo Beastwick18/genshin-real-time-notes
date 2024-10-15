@@ -22,7 +22,7 @@ namespace WebViewLogin
                     case "genshin":
                         url = "https://act.hoyolab.com/app/community-game-records-sea/index.html#/ys";
                         Icon = Properties.Resources.GenshinIcon;
-                        UidSelectorJS = "document.querySelector('.uid').innerHTML.split(' ')[0].substr(3)";
+                        UidSelectorJS = "document.querySelector(\"[class^=uid]\").innerHTML.trim().split('\\n')[0].substr(3)";
                         ExpectedUidLength = 9;
                         break;
                     case "hsr":
