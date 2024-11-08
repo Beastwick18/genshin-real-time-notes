@@ -13,8 +13,8 @@ import (
 	"time"
 )
 
-func MakeDailyRequest(url string, ltoken string, ltuid string, actID string) (*http.Response, error) {
-	jsonBody := []byte(fmt.Sprintf(`{"act_id": "%s"}`, actID))
+func MakeDailyRequest(url string, ltoken string, ltuid string, actID string, game string) (*http.Response, error) {
+	jsonBody := []byte(fmt.Sprintf(`{"act_id": "%s","lang":"en-us"}`, actID))
 	body := bytes.NewReader(jsonBody)
 	r, err := http.NewRequest("POST", url, body)
 	if err != nil {
@@ -23,17 +23,21 @@ func MakeDailyRequest(url string, ltoken string, ltuid string, actID string) (*h
 	r.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0")
 	r.Header.Set("Accept", "application/json, text/plain, */*")
 	r.Header.Set("Accept-Language", "en-US,en;q=0.5")
-	r.Header.Set("Accept-Encoding", "gzip, deflate, br")
+	r.Header.Set("Accept-Encoding", "gzip, deflate, br, zstd")
 	r.Header.Set("Content-Type", "application/json;charset=utf-8")
+	r.Header.Set("x-rpc-client_type", "5")
 	r.Header.Set("x-rpc-device_id", "7ba783da-1cc5-4c95-87f5-760e064faf37")
 	r.Header.Set("x-rpc-app_version", "1.5.0")
 	r.Header.Set("x-rpc-platform", "4")
 	r.Header.Set("x-rpc-language", "en-us")
 	r.Header.Set("x-rpc-device_name", "")
+	if game == "zzz" {
+		r.Header.Set("x-rpc-signgame", "zzz")
+	}
 	r.Header.Set("Origin", "https://act.hoyolab.com")
 	r.Header.Set("Connection", "keep-alive")
 	r.Header.Set("Referer", "https://act.hoyolab.com/")
-	r.Header.Set("Cookie", fmt.Sprintf("ltoken_v2=%s; ltuid_v2=%s", ltoken, ltuid))
+	r.Header.Set("Cookie", fmt.Sprintf("ltoken_v2=%s; ltuid_v2=%s;", ltoken, ltuid))
 
 	client := &http.Client{
 		Timeout: 5 * time.Second,
@@ -71,8 +75,8 @@ func MakeRequest(baseURL string, server string, genshinUID string, ltoken string
 	return client.Do(r)
 }
 
-func GetDailyData[T any](url string, ltoken string, ltuid string, actID string) (*T, error) {
-	response, err := MakeDailyRequest(url, ltoken, ltuid, actID)
+func GetDailyData[T any](url string, ltoken string, ltuid string, actID string, game string) (*T, error) {
+	response, err := MakeDailyRequest(url, ltoken, ltuid, actID, game)
 	if err != nil {
 		return nil, err
 	}

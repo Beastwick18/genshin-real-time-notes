@@ -6,5 +6,5 @@
 *.log
 /login
 *.zip
-*.sh
+/*.sh
 /.direnv

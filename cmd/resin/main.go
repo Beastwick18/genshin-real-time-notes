@@ -96,7 +96,7 @@ func refreshData(cfg *config.Config, m *Menu) {
 }
 
 func checkIn(cfg *config.Config) {
-	json, err := hoyo.GetDailyData[genshin.GenshinDailyResponse](genshin.DailyURL, cfg.Ltoken, cfg.Ltuid, genshin.ActID)
+	json, err := hoyo.GetDailyData[genshin.GenshinDailyResponse](genshin.DailyURL, cfg.Ltoken, cfg.Ltuid, genshin.ActID, "genshin")
 	if err != nil {
 		logging.Fail("Failed getting check in repsonse\n%s", err)
 		return

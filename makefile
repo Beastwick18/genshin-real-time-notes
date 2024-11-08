@@ -1,4 +1,4 @@
-VERSION := v0.0.6
+VERSION := v0.0.7
 
 .PHONY: resin stamina charge all clean login
 

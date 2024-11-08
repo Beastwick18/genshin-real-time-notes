@@ -121,7 +121,7 @@ func refreshData(cfg *config.Config, m *Menu) {
 }
 
 func checkIn(cfg *config.Config) {
-	json, err := hoyo.GetDailyData[zzz.ZzzDailyResponse](zzz.DailyURL, cfg.Ltoken, cfg.Ltuid, zzz.ActID)
+	json, err := hoyo.GetDailyData[zzz.ZzzDailyResponse](zzz.DailyURL, cfg.Ltoken, cfg.Ltuid, zzz.ActID, "zzz")
 	if err != nil {
 		logging.Fail("Failed getting check in repsonse\n%s", err)
 		return
