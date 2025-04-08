@@ -22,19 +22,19 @@ namespace WebViewLogin
                     case "genshin":
                         url = "https://act.hoyolab.com/app/community-game-records-sea/index.html#/ys";
                         Icon = Properties.Resources.GenshinIcon;
-                        UidSelectorJS = "document.querySelector(\"[class^=uid]\").innerHTML.trim().split('\\n')[0].substr(3)";
+                        UidSelectorJS = "document.querySelector(\"[class^=uid]\").innerHTML.trim().split('\\n')[0]";
                         ExpectedUidLength = 9;
                         break;
                     case "hsr":
                         url = "https://act.hoyolab.com/app/community-game-records-sea/rpg/index.html#/hsr";
                         Icon = Properties.Resources.HsrIcon;
-                        UidSelectorJS = "document.querySelector('.uid').innerHTML.split(' ')[0].substr(3)";
+                        UidSelectorJS = "document.querySelector('.uid').innerHTML.split(' ')[0]";
                         ExpectedUidLength = 9;
                         break;
                     case "zzz":
                         url = "https://act.hoyolab.com/app/mihoyo-zzz-game-record/index.html#/zzz";
                         Icon = Properties.Resources.ZzzIcon;
-                        UidSelectorJS = "document.querySelector(\"[class^=uid_]\").innerHTML.trim().split('\\n')[0].substr(3)";
+                        UidSelectorJS = "document.querySelector(\"[class^=uid_]\").innerHTML.trim().split('\\n')[0]";
                         ExpectedUidLength = 10;
                         break;
                 }
@@ -85,33 +85,14 @@ namespace WebViewLogin
                 return;
             }
 
-            // string queryString = String.Format("document.querySelector('{}').innerHTML.split(' ')[0].substr(3)", this.UidSelector);
             string uid = await webView.ExecuteScriptAsync(UidSelectorJS);
             if (uid == "null" || uid == null)
             {
                 Warning("Could not find UID. Make sure you are logged in.");
                 return;
             }
-            if (uid.Length < 6)
-            {
-                Warning("Could not find a valid UID: Got \"" + uid + "\"");
-                return;
-            }
 
-            switch (this.App)
-            {
-                case "genshin":
-                    uid = uid.Substring(1, uid.Length - 2);
-                    break;
-                case "hsr":
-                    uid = uid.Substring(1, uid.Length - 2);
-                    break;
-                case "zzz":
-                    uid = uid.Substring(3, uid.Length - 4);
-                    break;
-                default:
-                    break;
-            };
+            uid = new String(uid.Where(char.IsAsciiDigit).ToArray());
 
             if (!uid.All(char.IsAsciiDigit))
             {
